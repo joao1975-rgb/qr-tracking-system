@@ -1,0 +1,35 @@
+services:
+  - type: web
+    name: qr-tracking-system
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        value: tracking.db
+    # Configuraciones adicionales para el proyecto de tracking
+    plan: free  # Usar plan gratuito
+    region: oregon  # Región del servidor
+    
+    # Configuraciones de salud y escalado
+    healthCheckPath: /health
+    
+    # Variables adicionales para el tracking
+    disk:
+      name: tracking-disk
+      sizeGB: 1
+      
+# Configuración opcional para base de datos PostgreSQL en el futuro
+# databases:
+#   - name: tracking-postgres
+#     databaseName: qr_tracking_db
+#     user: tracking_user
+#     plan: free
+
+# Configuración de dominio personalizado (opcional)
+# domains:
+#   - name: tu-dominio-personalizado.com
