@@ -25,6 +25,7 @@ logger = logging.getLogger(__name__)
 def init_db():
     """Inicializar la base de datos con las tablas necesarias"""
     with sqlite3.connect(app.config['DATABASE']) as conn:
+        # Tabla principal de tracking
         conn.execute('''
             CREATE TABLE IF NOT EXISTS tracking_data (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -32,8 +33,9 @@ def init_db():
                 campaign TEXT NOT NULL,
                 client TEXT NOT NULL,
                 destination TEXT NOT NULL,
+                device_id TEXT DEFAULT 'unknown',
                 
-                -- Datos del dispositivo
+                -- Datos del dispositivo del usuario
                 user_agent TEXT,
                 device_type TEXT,
                 browser TEXT,
@@ -57,6 +59,7 @@ def init_db():
             )
         ''')
         
+        # Tabla de campañas
         conn.execute('''
             CREATE TABLE IF NOT EXISTS campaigns (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -69,12 +72,30 @@ def init_db():
             )
         ''')
         
+        # Tabla de dispositivos físicos
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS physical_devices (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                device_id TEXT UNIQUE NOT NULL,
+                device_name TEXT NOT NULL,
+                location TEXT NOT NULL,
+                device_type TEXT NOT NULL,
+                venue TEXT NOT NULL,
+                installation_date DATE,
+                active BOOLEAN DEFAULT TRUE,
+                notes TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        
         # Crear algunas campañas de ejemplo
         campaigns_example = [
             ('metro_plaza_venezuela', 'Coca Cola', 'https://instagram.com/cocacola', 'Anuncio Metro Plaza Venezuela'),
             ('cc_sambil', 'Samsung', 'https://www.samsung.com/ve', 'Centro Comercial Sambil'),
             ('terminal_la_bandera', 'McDonald\'s', 'https://instagram.com/mcdonaldsve', 'Terminal La Bandera'),
-            ('autopista_francisco_fajardo', 'Pepsi', 'https://www.pepsi.com.ve', 'Valla Autopista Francisco Fajardo')
+            ('autopista_francisco_fajardo', 'Pepsi', 'https://www.pepsi.com.ve', 'Valla Autopista Francisco Fajardo'),
+            ('cc_ccct', 'Apple', 'https://www.apple.com/ve', 'Centro Comercial Ciudad Tamanaco'),
+            ('metro_capitolio', 'Nike', 'https://instagram.com/nike', 'Estación Metro Capitolio')
         ]
         
         for campaign in campaigns_example:
@@ -83,8 +104,29 @@ def init_db():
                 VALUES (?, ?, ?, ?)
             ''', campaign)
         
+        # Dispositivos físicos de ejemplo
+        devices_example = [
+            ('totem_entrada_principal', 'Totem Digital Principal', 'Entrada Principal', 'Totem Interactivo', 'CC Sambil'),
+            ('pantalla_planta_baja', 'Pantalla LED Planta Baja', 'Planta Baja - Zona Central', 'Pantalla LED', 'CC Sambil'),
+            ('kiosco_food_court', 'Kiosco Food Court', 'Food Court - Mesa 15', 'Kiosco Interactivo', 'CC Sambil'),
+            ('totem_estacionamiento_A', 'Totem Estacionamiento A', 'Estacionamiento Nivel A', 'Totem Digital', 'CC Sambil'),
+            ('pantalla_metro_entrada', 'Pantalla Entrada Metro', 'Entrada Estación Metro', 'Pantalla Digital', 'Metro Plaza Venezuela'),
+            ('totem_terminal_sur', 'Totem Terminal Sur', 'Área de Espera Sur', 'Totem Interactivo', 'Terminal La Bandera'),
+            ('pantalla_autopista_norte', 'Pantalla Valla Norte', 'Km 15 Sentido Norte', 'Valla Digital', 'Autopista Francisco Fajardo'),
+            ('pantalla_autopista_sur', 'Pantalla Valla Sur', 'Km 15 Sentido Sur', 'Valla Digital', 'Autopista Francisco Fajardo'),
+            ('totem_ccct_nivel1', 'Totem CCCT Nivel 1', 'Nivel 1 - Entrada Principal', 'Totem Interactivo', 'CC Ciudad Tamanaco'),
+            ('pantalla_metro_capitolio', 'Pantalla Metro Capitolio', 'Andén Principal', 'Pantalla LED', 'Metro Capitolio')
+        ]
+        
+        for device in devices_example:
+            conn.execute('''
+                INSERT OR IGNORE INTO physical_devices 
+                (device_id, device_name, location, device_type, venue) 
+                VALUES (?, ?, ?, ?, ?)
+            ''', device)
+        
         conn.commit()
-        logger.info("Base de datos inicializada correctamente")
+        logger.info("Base de datos con tracking de dispositivos inicializada correctamente")
 
 @contextmanager
 def get_db_connection():
@@ -152,6 +194,18 @@ def get_campaign_info(campaign_code):
             return dict(result)
     return None
 
+def get_physical_device_info(device_id):
+    """Obtener información del dispositivo físico"""
+    with get_db_connection() as conn:
+        result = conn.execute(
+            'SELECT * FROM physical_devices WHERE device_id = ? AND active = TRUE',
+            (device_id,)
+        ).fetchone()
+        
+        if result:
+            return dict(result)
+    return None
+
 @app.route('/')
 def index():
     """Página principal del escáner QR (mantenida para compatibilidad)"""
@@ -170,8 +224,14 @@ def track_access():
         campaign = request.args.get('campaign', '').strip()
         destination = request.args.get('destination', '').strip()
         client = request.args.get('client', '').strip()
+        device_id = request.args.get('device_id', 'unknown_device').strip()
         
-        logger.info(f"Tracking access - Campaign: {campaign}, Client: {client}")
+        logger.info(f"Tracking access - Campaign: {campaign}, Client: {client}, Device: {device_id}")
+        
+        # Obtener información del dispositivo físico
+        physical_device_info = get_physical_device_info(device_id)
+        device_location = physical_device_info['location'] if physical_device_info else 'Ubicación desconocida'
+        device_venue = physical_device_info['venue'] if physical_device_info else 'Venue desconocido'
         
         # Si no hay campaña, usar parámetros de destino directo
         if not campaign and destination:
@@ -196,7 +256,7 @@ def track_access():
         # Generar ID único para esta sesión
         session_id = str(uuid.uuid4())
         
-        # Capturar datos del dispositivo
+        # Capturar datos del dispositivo del usuario
         user_agent = request.headers.get('User-Agent', '')
         device_info = get_device_info(user_agent)
         
@@ -212,26 +272,29 @@ def track_access():
         with get_db_connection() as conn:
             conn.execute('''
                 INSERT INTO tracking_data (
-                    session_id, campaign, client, destination,
+                    session_id, campaign, client, destination, device_id,
                     user_agent, device_type, browser, operating_system,
                     ip_address, referrer, access_time
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
-                session_id, campaign, client, destination,
+                session_id, campaign, client, destination, device_id,
                 user_agent, device_info['device_type'], 
                 device_info['browser'], device_info['operating_system'],
                 ip_address, referrer, access_time
             ))
             conn.commit()
         
-        logger.info(f"Datos de tracking guardados - Session: {session_id}")
+        logger.info(f"Datos de tracking guardados - Session: {session_id}, Device: {device_id}")
         
         # Renderizar página intermedia
         return render_template('tracking.html',
             session_id=session_id,
             destination=destination,
             client=client,
-            campaign=campaign
+            campaign=campaign,
+            device_id=device_id,
+            device_location=device_location,
+            device_venue=device_venue
         )
         
     except Exception as e:
@@ -251,6 +314,9 @@ def collect_additional_data():
         
         # Datos adicionales del dispositivo
         screen_resolution = data.get('screen_resolution', '')
+        viewport_size = data.get('viewport_size', '')
+        timezone = data.get('timezone', '')
+        language = data.get('language', '')
         
         # Actualizar datos en la base de datos
         with get_db_connection() as conn:
@@ -316,7 +382,8 @@ def dashboard():
                     COUNT(*) as total_scans,
                     COUNT(CASE WHEN completed_redirect = TRUE THEN 1 END) as completed_redirects,
                     COUNT(DISTINCT campaign) as active_campaigns,
-                    COUNT(DISTINCT client) as total_clients
+                    COUNT(DISTINCT client) as total_clients,
+                    COUNT(DISTINCT device_id) as physical_devices_used
                 FROM tracking_data
                 WHERE DATE(access_time) >= DATE('now', '-30 days')
             ''').fetchone()
@@ -328,15 +395,34 @@ def dashboard():
                     COUNT(*) as scans,
                     COUNT(CASE WHEN completed_redirect = TRUE THEN 1 END) as completions,
                     AVG(duration_seconds) as avg_duration,
-                    MAX(access_time) as last_scan
+                    MAX(access_time) as last_scan,
+                    COUNT(DISTINCT device_id) as devices_used
                 FROM tracking_data
                 WHERE DATE(access_time) >= DATE('now', '-30 days')
                 GROUP BY campaign, client, destination
                 ORDER BY scans DESC
             ''').fetchall()
             
-            # Estadísticas por dispositivo
+            # Estadísticas por dispositivo físico
             device_stats = conn.execute('''
+                SELECT 
+                    td.device_id,
+                    pd.device_name,
+                    pd.location,
+                    pd.venue,
+                    pd.device_type,
+                    COUNT(*) as scans,
+                    COUNT(CASE WHEN td.completed_redirect = TRUE THEN 1 END) as completions,
+                    AVG(td.duration_seconds) as avg_duration
+                FROM tracking_data td
+                LEFT JOIN physical_devices pd ON td.device_id = pd.device_id
+                WHERE DATE(td.access_time) >= DATE('now', '-30 days')
+                GROUP BY td.device_id, pd.device_name, pd.location, pd.venue, pd.device_type
+                ORDER BY scans DESC
+            ''').fetchall()
+            
+            # Estadísticas por dispositivo del usuario
+            user_device_stats = conn.execute('''
                 SELECT 
                     device_type, browser, operating_system,
                     COUNT(*) as count
@@ -357,12 +443,28 @@ def dashboard():
                 GROUP BY hour
                 ORDER BY hour
             ''').fetchall()
+            
+            # Top venues/ubicaciones
+            venue_stats = conn.execute('''
+                SELECT 
+                    pd.venue,
+                    COUNT(*) as scans,
+                    COUNT(CASE WHEN td.completed_redirect = TRUE THEN 1 END) as completions,
+                    COUNT(DISTINCT td.device_id) as devices_count
+                FROM tracking_data td
+                LEFT JOIN physical_devices pd ON td.device_id = pd.device_id
+                WHERE DATE(td.access_time) >= DATE('now', '-30 days')
+                GROUP BY pd.venue
+                ORDER BY scans DESC
+            ''').fetchall()
         
         return render_template('dashboard.html',
             stats=dict(stats),
             campaigns=campaigns_stats,
-            devices=device_stats,
-            hourly=hourly_stats
+            physical_devices=device_stats,
+            user_devices=user_device_stats,
+            hourly=hourly_stats,
+            venues=venue_stats
         )
         
     except Exception as e:
@@ -390,6 +492,27 @@ def api_campaigns():
         logger.error(f"Error obteniendo campañas: {e}")
         return jsonify({'success': False, 'error': 'Error interno'}), 500
 
+@app.route('/api/devices')
+def api_devices():
+    """API para obtener dispositivos físicos disponibles"""
+    try:
+        with get_db_connection() as conn:
+            devices = conn.execute('''
+                SELECT device_id, device_name, location, device_type, venue, active
+                FROM physical_devices
+                WHERE active = TRUE
+                ORDER BY venue, location
+            ''').fetchall()
+        
+        return jsonify({
+            'success': True,
+            'devices': [dict(device) for device in devices]
+        })
+        
+    except Exception as e:
+        logger.error(f"Error obteniendo dispositivos: {e}")
+        return jsonify({'success': False, 'error': 'Error interno'}), 500
+
 @app.route('/generate-qr')
 def generate_qr_page():
     """Página para generar códigos QR de campañas"""
@@ -398,11 +521,41 @@ def generate_qr_page():
             campaigns = conn.execute('''
                 SELECT * FROM campaigns WHERE active = TRUE ORDER BY created_at DESC
             ''').fetchall()
+            
+            devices = conn.execute('''
+                SELECT * FROM physical_devices WHERE active = TRUE ORDER BY venue, location
+            ''').fetchall()
         
-        return render_template('generate_qr.html', campaigns=campaigns)
+        return render_template('generate_qr.html', 
+            campaigns=campaigns, 
+            physical_devices=devices
+        )
         
     except Exception as e:
         logger.error(f"Error en página de generar QR: {e}")
+        return f"Error: {str(e)}", 500
+
+@app.route('/devices')
+def devices_page():
+    """Página de administración de dispositivos físicos"""
+    try:
+        with get_db_connection() as conn:
+            devices = conn.execute('''
+                SELECT 
+                    pd.*,
+                    COUNT(td.id) as total_scans,
+                    MAX(td.access_time) as last_scan
+                FROM physical_devices pd
+                LEFT JOIN tracking_data td ON pd.device_id = td.device_id 
+                    AND DATE(td.access_time) >= DATE('now', '-30 days')
+                GROUP BY pd.id
+                ORDER BY pd.venue, pd.location
+            ''').fetchall()
+        
+        return render_template('devices.html', devices=devices)
+        
+    except Exception as e:
+        logger.error(f"Error en página de dispositivos: {e}")
         return f"Error: {str(e)}", 500
 
 # Mantener rutas originales para compatibilidad
@@ -470,8 +623,9 @@ def health_check():
     """Endpoint de verificación de salud"""
     return jsonify({
         'status': 'healthy',
-        'message': 'Sistema de tracking QR funcionando',
-        'version': '2.0.0'
+        'message': 'Sistema de tracking QR con dispositivos funcionando',
+        'version': '2.1.0',
+        'features': ['device_tracking', 'physical_devices', 'venue_analytics']
     })
 
 if __name__ == '__main__':
@@ -484,7 +638,7 @@ if __name__ == '__main__':
     
     app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max
     
-    logger.info(f"Iniciando sistema de tracking QR en puerto {port}")
+    logger.info(f"Iniciando sistema de tracking QR con dispositivos en puerto {port}")
     logger.info(f"Modo debug: {debug_mode}")
     
     try:
