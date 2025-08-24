@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administrar Dispositivos - QR Tracking</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8fafc;
+            color: #374151;
+            line-height: 1.6;
+        }
+
+        .admin-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            color: white;
+            padding: 40px 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .form-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #059669;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #10b981;
+            border: 2px solid #10b981;
+        }
+
+        .btn-outline:hover {
+            background: #10b981;
+            color: white;
+        }
+
+        .devices-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .device-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            border: 2px solid #e5e7eb;
+            transition: all 0.3s ease;
+        }
+
+        .device-card:hover {
+            border-color: #10b981;
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.1);
+        }
+
+        .device-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .device-status {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-inactive {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .device-info {
+            margin-bottom: 15px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+
+        .info-label {
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .info-value {
+            color: #374151;
+            font-weight: 600;
+        }
+
+        .device-stats {
+            background: #f0fdf4;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            border: 1px solid #bbf7d0;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .stats-number {
+            color: #059669;
+            font-weight: bold;
+        }
+
+        .device-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 0.9em;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+            position: relative;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .alert-info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+        }
+
+        .device-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+        }
+
+        .icon-totem {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+
+        .icon-screen {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+        }
+
+        .icon-kiosk {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+        }
+
+        .icon-other {
+            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .devices-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .device-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🖥️ Administrar Dispositivos Físicos</h1>
+            <p>Gestiona y monitorea todos tus dispositivos de tracking QR</p>
+        </div>
+
+        <!-- Alertas -->
+        <div id="alerts"></div>
+
+        <!-- Formulario para nuevo dispositivo -->
+        <div class="form-section">
+            <h2 style="margin-bottom: 20px; color: #374151;">➕ Nuevo Dispositivo</h2>
+            
+            <form id="deviceForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="device_id">ID del Dispositivo *</label>
+                        <input type="text" id="device_id" name="device_id" required 
+                               placeholder="ej: totem_sambil_entrada_01" 
+                               pattern="[a-zA-Z0-9_-]+" 
+                               title="Solo letras, números, guiones y guiones bajos">
+                        <small style="color: #6b7280; margin-top: 5px;">
+                            Identificador único (solo letras, números, - y _)
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="device_name">Nombre del Dispositivo *</label>
+                        <input type="text" id="device_name" name="device_name" required 
+                               placeholder="ej: Totem Principal Entrada">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="device_type">Tipo de Dispositivo *</label>
+                        <select id="device_type" name="device_type" required>
+                            <option value="">Seleccionar tipo...</option>
+                            <option value="Totem Interactivo">Totem Interactivo</option>
+                            <option value="Pantalla LED">Pantalla LED</option>
+                            <option value="Kiosco">Kiosco</option>
+                            <option value="Valla Digital">Valla Digital</option>
+                            <option value="Display Móvil">Display Móvil</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="location">Ubicación *</label>
+                        <input type="text" id="location" name="location" required 
+                               placeholder="ej: Entrada Principal - Planta Baja">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="venue">Venue *</label>
+                        <input type="text" id="venue" name="venue" required 
+                               placeholder="ej: Centro Comercial Sambil">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="notes">Notas Adicionales</label>
+                        <textarea id="notes" name="notes" rows="2" 
+                                  placeholder="Información adicional sobre el dispositivo..."></textarea>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label>
+                        <input type="checkbox" id="active" name="active" checked style="margin-right: 8px;">
+                        Dispositivo activo
+                    </label>
+                </div>
+
+                <div style="display: flex; gap: 15px; justify-content: center; margin-top: 20px;">
+                    <button type="submit" class="btn btn-primary">
+                        💾 Crear Dispositivo
+                    </button>
+                    <button type="reset" class="btn btn-secondary">
+                        🔄 Limpiar Formulario
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Lista de dispositivos existentes -->
+        <div class="form-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin: 0; color: #374151;">🖨️ Dispositivos Existentes</h2>
+                <button class="btn btn-outline" onclick="loadDevices()">
+                    🔄 Actualizar Lista
+                </button>
+            </div>
+            
+            <div class="devices-grid" id="devicesGrid">
+                <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #6b7280;">
+                    <div style="font-size: 2em; margin-bottom: 20px;">⏳</div>
+                    <p>Cargando dispositivos...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botones de navegación -->
+        <div style="text-align: center; margin-top: 40px;">
+            <a href="/url-builder" class="btn btn-primary" style="margin-right: 15px;">
+                🔗 Constructor URLs
+            </a>
+            <a href="/dashboard" class="btn btn-secondary" style="margin-right: 15px;">
+                📊 Ver Dashboard
+            </a>
+            <a href="/" class="btn btn-outline">
+                🏠 Página Principal
+            </a>
+        </div>
+
+        <!-- Información del sistema -->
+        <div style="background: white; border-radius: 15px; padding: 30px; margin-top: 30px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);">
+            <h3 style="color: #374151; margin-bottom: 20px;">ℹ️ Información de Dispositivos</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                <div>
+                    <h4 style="color: #10b981; margin-bottom: 10px;">Tipos de Dispositivos Soportados</h4>
+                    <ul style="color: #6b7280; line-height: 2;">
+                        <li><strong>Totem Interactivo:</strong> Pantalla táctil independiente</li>
+                        <li><strong>Pantalla LED:</strong> Display publicitario digital</li>
+                        <li><strong>Kiosco:</strong> Terminal de autoservicio</li>
+                        <li><strong>Valla Digital:</strong> Publicidad exterior digital</li>
+                        <li><strong>Display Móvil:</strong> Dispositivo transportable</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 style="color: #10b981; margin-bottom: 10px;">Estados del Sistema</h4>
+                    <ul style="color: #6b7280; line-height: 2;">
+                        <li><span style="color: #10b981;">●</span> <strong>Activo:</strong> Dispositivo operativo y rastreando</li>
+                        <li><span style="color: #dc2626;">●</span> <strong>Inactivo:</strong> Dispositivo deshabilitado temporalmente</li>
+                        <li><span style="color: #f59e0b;">●</span> <strong>Mantenimiento:</strong> En servicio técnico</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 style="color: #10b981; margin-bottom: 10px;">Mejores Prácticas</h4>
+                    <ul style="color: #6b7280; line-height: 2;">
+                        <li>Usa IDs descriptivos y únicos</li>
+                        <li>Incluye la ubicación exacta</li>
+                        <li>Especifica el venue claramente</li>
+                        <li>Mantén las notas actualizadas</li>
+                        <li>Desactiva dispositivos en mantenimiento</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 style="color: #10b981; margin-bottom: 10px;">Estadísticas</h4>
+                    <div style="color: #6b7280;">
+                        <p><strong>Total Dispositivos:</strong> <span id="totalDevices">0</span></p>
+                        <p><strong>Dispositivos Activos:</strong> <span id="activeDevices">0</span></p>
+                        <p><strong>Última Actualización:</strong> <span id="lastUpdate">-</span></p>
+                        <p><strong>Sistema Versión:</strong> 2.5.0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        const API_BASE = window.location.origin + '/api';
+        let devices = [];
+        let editingDeviceId = null;
+
+        // Elementos del DOM
+        const deviceForm = document.getElementById('deviceForm');
+        const alertsContainer = document.getElementById('alerts');
+        const devicesGrid = document.getElementById('devicesGrid');
+
+        // Utilidades
+        function showAlert(message, type = 'info') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button style="position: absolute; right: 15px; top: 15px; background: none; border: none; font-size: 1.2em; cursor: pointer; color: inherit;" onclick="this.parentElement.remove()">×</button>
+            `;
+            alertsContainer.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                if (alertDiv.parentElement) {
+                    alertDiv.remove();
+                }
+            }, 8000);
+        }
+
+        function getDeviceIcon(deviceType) {
+            const type = deviceType.toLowerCase();
+            if (type.includes('totem')) return { icon: '🗂️', class: 'icon-totem' };
+            if (type.includes('pantalla') || type.includes('led')) return { icon: '📺', class: 'icon-screen' };
+            if (type.includes('kiosco')) return { icon: '🏪', class: 'icon-kiosk' };
+            if (type.includes('valla')) return { icon: '🪧', class: 'icon-screen' };
+            if (type.includes('móvil') || type.includes('movil')) return { icon: '📱', class: 'icon-kiosk' };
+            return { icon: '🖥️', class: 'icon-other' };
+        }
+
+        // API calls
+        async function loadDevices() {
+            try {
+                const response = await fetch(`${API_BASE}/devices`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    devices = data.devices;
+                    renderDevices(devices);
+                    updateStats(devices);
+                } else {
+                    showAlert('❌ Error cargando dispositivos: ' + data.error, 'error');
+                    renderEmptyState();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('❌ Error de conexión al cargar dispositivos', 'error');
+                renderEmptyState();
+            }
+        }
+
+        async function createOrUpdateDevice(deviceData) {
+            try {
+                const isEditing = editingDeviceId !== null;
+                const url = isEditing ? `${API_BASE}/devices/${editingDeviceId}` : `${API_BASE}/devices`;
+                const method = isEditing ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(deviceData)
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    const action = isEditing ? 'actualizado' : 'creado';
+                    showAlert(`✅ Dispositivo "${deviceData.device_name}" ${action} exitosamente`, 'success');
+                    deviceForm.reset();
+                    editingDeviceId = null;
+                    await loadDevices();
+                } else {
+                    showAlert(`❌ Error: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('❌ Error de conexión al guardar dispositivo', 'error');
+            }
+        }
+
+        async function deleteDevice(deviceId, deviceName) {
+            if (!confirm(`¿Estás seguro de eliminar el dispositivo "${deviceName}"?\n\nEsta acción no se puede deshacer.`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/devices/${deviceId}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert(`✅ Dispositivo "${deviceName}" eliminado exitosamente`, 'success');
+                    await loadDevices();
+                } else {
+                    showAlert(`❌ Error: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('❌ Error de conexión al eliminar dispositivo', 'error');
+            }
+        }
+
+        async function toggleDeviceStatus(deviceId, newStatus) {
+            const device = devices.find(d => d.device_id === deviceId);
+            if (!device) return;
+
+            const action = newStatus ? 'activar' : 'desactivar';
+            if (!confirm(`¿Estás seguro de ${action} el dispositivo "${device.device_name}"?`)) {
+                return;
+            }
+
+            try {
+                // Crear el objeto de actualización solo con el campo active
+                const updateData = {
+                    active: newStatus
+                };
+
+                const response = await fetch(`${API_BASE}/devices/${deviceId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(updateData)
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert(`✅ Dispositivo "${device.device_name}" ${newStatus ? 'activado' : 'desactivado'}`, 'success');
+                    await loadDevices();
+                } else {
+                    showAlert(`❌ Error: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('❌ Error de conexión al actualizar dispositivo', 'error');
+            }
+        }
+
+        // Renderizado
+        function renderDevices(devicesList) {
+            if (!devicesList || devicesList.length === 0) {
+                renderEmptyState();
+                return;
+            }
+
+            devicesGrid.innerHTML = devicesList.map(device => {
+                const iconData = getDeviceIcon(device.device_type || 'otro');
+                return `
+                    <div class="device-card">
+                        <div class="device-header">
+                            <h3 style="color: #374151; margin: 0;">${device.device_name || 'Sin nombre'}</h3>
+                            <span class="device-status ${device.active ? 'status-active' : 'status-inactive'}">
+                                ${device.active ? 'Activo' : 'Inactivo'}
+                            </span>
+                        </div>
+                        
+                        <div class="device-icon ${iconData.class}">
+                            ${iconData.icon}
+                        </div>
+                        
+                        <div class="device-info">
+                            <div class="info-row">
+                                <span class="info-label">ID:</span>
+                                <span class="info-value">${device.device_id}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Tipo:</span>
+                                <span class="info-value">${device.device_type || 'No especificado'}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Ubicación:</span>
+                                <span class="info-value">${device.location || 'No especificada'}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Venue:</span>
+                                <span class="info-value">${device.venue || 'No especificado'}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Creado:</span>
+                                <span class="info-value">${new Date(device.created_at).toLocaleDateString('es-ES')}</span>
+                            </div>
+                        </div>
+                        
+                        ${device.description ? `
+                            <div style="background: #fef3c7; padding: 10px; border-radius: 8px; margin: 15px 0; border: 1px solid #fde68a;">
+                                <p style="color: #92400e; font-size: 0.9em; margin: 0;">
+                                    <strong>Nota:</strong> ${device.description}
+                                </p>
+                            </div>
+                        ` : ''}
+                        
+                        <div class="device-actions">
+                            <button class="btn btn-primary btn-small" onclick="editDevice('${device.device_id}')">
+                                ✏️ Editar
+                            </button>
+                            <button class="btn btn-secondary btn-small" onclick="toggleDeviceStatus('${device.device_id}', ${!device.active})">
+                                ${device.active ? '⏸️ Desactivar' : '▶️ Activar'}
+                            </button>
+                            <button class="btn btn-outline btn-small" onclick="copyDeviceUrl('${device.device_id}')">
+                                📋 Copiar ID
+                            </button>
+                            <button class="btn btn-danger btn-small" onclick="deleteDevice('${device.device_id}', '${device.device_name}')">
+                                🗑️ Eliminar
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderEmptyState() {
+            devicesGrid.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 60px; color: #6b7280;">
+                    <div style="font-size: 4em; margin-bottom: 20px;">🖥️</div>
+                    <h3>No hay dispositivos registrados</h3>
+                    <p>¡Crea tu primer dispositivo usando el formulario de arriba!</p>
+                </div>
+            `;
+        }
+
+        function updateStats(devicesList) {
+            const total = devicesList.length;
+            const active = devicesList.filter(d => d.active).length;
+            const now = new Date().toLocaleString('es-ES');
+
+            document.getElementById('totalDevices').textContent = total;
+            document.getElementById('activeDevices').textContent = active;
+            document.getElementById('lastUpdate').textContent = now;
+        }
+
+        // Funciones de utilidad
+        function editDevice(deviceId) {
+            const device = devices.find(d => d.device_id === deviceId);
+            if (!device) return;
+
+            // Llenar el formulario con los datos del dispositivo
+            document.getElementById('device_id').value = device.device_id;
+            document.getElementById('device_name').value = device.device_name || '';
+            document.getElementById('device_type').value = device.device_type || '';
+            document.getElementById('location').value = device.location || '';
+            document.getElementById('venue').value = device.venue || '';
+            document.getElementById('notes').value = device.description || '';
+            document.getElementById('active').checked = device.active;
+
+            // Deshabilitar el campo ID para edición
+            document.getElementById('device_id').disabled = true;
+            editingDeviceId = deviceId;
+
+            // Cambiar el botón
+            const submitBtn = deviceForm.querySelector('button[type="submit"]');
+            submitBtn.innerHTML = '✏️ Actualizar Dispositivo';
+            submitBtn.style.background = '#f59e0b';
+
+            // Scroll al formulario
+            document.querySelector('.form-section').scrollIntoView({ behavior: 'smooth' });
+            
+            showAlert(`📝 Editando dispositivo "${device.device_name}"`, 'info');
+        }
+
+        async function copyDeviceUrl(deviceId) {
+            const baseUrl = window.location.origin;
+            const exampleUrl = `${baseUrl}/track?campaign=tu_campana&client=tu_cliente&device_id=${deviceId}&destination=https://tu-destino.com`;
+            
+            try {
+                await navigator.clipboard.writeText(deviceId);
+                showAlert(`📋 ID del dispositivo copiado: ${deviceId}`, 'success');
+            } catch (error) {
+                console.error('Error copiando:', error);
+                
+                // Fallback
+                const textArea = document.createElement('textarea');
+                textArea.value = deviceId;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                showAlert(`📋 ID del dispositivo copiado: ${deviceId}`, 'success');
+            }
+        }
+
+        function resetForm() {
+            editingDeviceId = null;
+            document.getElementById('device_id').disabled = false;
+            
+            const submitBtn = deviceForm.querySelector('button[type="submit"]');
+            submitBtn.innerHTML = '💾 Crear Dispositivo';
+            submitBtn.style.background = '#10b981';
+            
+            deviceForm.reset();
+        }
+
+        // Event listeners
+        deviceForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(deviceForm);
+            const deviceData = {
+                device_id: formData.get('device_id').trim(),
+                device_name: formData.get('device_name').trim(),
+                device_type: formData.get('device_type').trim(),
+                location: formData.get('location').trim(),
+                venue: formData.get('venue').trim(),
+                description: formData.get('notes').trim() || null,
+                active: formData.has('active')
+            };
+
+            // Validaciones del lado cliente
+            if (!deviceData.device_id || !deviceData.device_name || !deviceData.device_type || !deviceData.location || !deviceData.venue) {
+                showAlert('❌ Todos los campos marcados con * son obligatorios', 'error');
+                return;
+            }
+
+            if (!(/^[a-zA-Z0-9_-]+$/.test(deviceData.device_id))) {
+                showAlert('❌ El ID del dispositivo solo puede contener letras, números, guiones y guiones bajos', 'error');
+                return;
+            }
+
+            // Verificar si el ID ya existe (solo para nuevos dispositivos)
+            if (!editingDeviceId && devices.some(d => d.device_id === deviceData.device_id)) {
+                showAlert('❌ Ya existe un dispositivo con ese ID', 'error');
+                return;
+            }
+
+            await createOrUpdateDevice(deviceData);
+        });
+
+        deviceForm.addEventListener('reset', function() {
+            resetForm();
+        });
+
+        // Validación en tiempo real del ID
+        document.getElementById('device_id').addEventListener('input', function() {
+            const value = this.value;
+            const isValid = /^[a-zA-Z0-9_-]*$/.test(value);
+            
+            if (value && !isValid) {
+                this.style.borderColor = '#dc2626';
+                this.style.backgroundColor = '#fee2e2';
+            } else {
+                this.style.borderColor = '#e5e7eb';
+                this.style.backgroundColor = 'white';
+            }
+        });
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDevices();
+            
+            // Mostrar mensaje de bienvenida
+            setTimeout(() => {
+                showAlert('🖥️ Panel de administración de dispositivos cargado. Gestiona tus dispositivos físicos de tracking QR.', 'info');
+            }, 1000);
+            
+            // Auto-refresh cada 3 minutos
+            setInterval(loadDevices, 180000);
+        });
+
+        // Atajos de teclado
+        document.addEventListener('keydown', function(e) {
+            // Ctrl/Cmd + Enter para enviar formulario
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                deviceForm.dispatchEvent(new Event('submit'));
+            }
+            
+            // Escape para cancelar edición
+            if (e.key === 'Escape' && editingDeviceId) {
+                resetForm();
+                showAlert('✖️ Edición cancelada', 'info');
+            }
+        });
+
+        // Logging para debugging
+        console.log('🖥️ Device Admin Panel QR Tracking System v2.5.0');
+        console.log('API Base:', API_BASE);
+        console.log('Funcionalidades: CRUD Dispositivos, Validación, Auto-refresh');
+    </script>
+</body>
+</html>

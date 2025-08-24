@@ -1,0 +1,1379 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Analytics QR</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8fafc;
+            color: #374151;
+            line-height: 1.6;
+        }
+
+        .dashboard-container {
+            background: #f8fafc;
+            min-height: 100vh;
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .dashboard-header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 40px 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e5e7eb;
+        }
+        
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #4f46e5;
+            margin-bottom: 10px;
+        }
+        
+        .stat-label {
+            color: #6b7280;
+            font-size: 1em;
+            font-weight: 500;
+        }
+        
+        .campaigns-table {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+        
+        .table-header {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            padding: 20px 30px;
+        }
+        
+        .table-content {
+            padding: 0;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 15px 30px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .success-rate {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+        
+        .success-high { background: #dcfce7; color: #166534; }
+        .success-medium { background: #fef3c7; color: #92400e; }
+        .success-low { background: #fee2e2; color: #dc2626; }
+        
+        .device-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .progress-bar-horizontal {
+            background: #e5e7eb;
+            border-radius: 10px;
+            height: 8px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        
+        .progress-fill-horizontal {
+            height: 100%;
+            background: linear-gradient(90deg, #4f46e5, #7c3aed);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+        
+        .device-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        
+        .device-item:last-child {
+            border-bottom: none;
+        }
+
+        .device-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .device-icon {
+            font-size: 1.5em;
+            margin-right: 10px;
+        }
+
+        .device-type-mobile { color: #10b981; }
+        .device-type-tablet { color: #f59e0b; }
+        .device-type-desktop { color: #3b82f6; }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            margin: 5px;
+        }
+
+        .btn-primary {
+            background: #4f46e5;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #4338ca;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #4f46e5;
+            border: 2px solid #4f46e5;
+        }
+
+        .btn-outline:hover {
+            background: #4f46e5;
+            color: white;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 2% auto;
+            padding: 0;
+            border-radius: 15px;
+            width: 95%;
+            max-width: 1200px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .close {
+            color: white;
+            font-size: 35px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .close:hover {
+            opacity: 0.7;
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        /* URL Builder Styles (embedded) */
+        .builder-form {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .form-section {
+            background: #f8fafc;
+            padding: 25px;
+            border-radius: 12px;
+            border: 2px solid #e5e7eb;
+        }
+
+        .form-section h3 {
+            color: #4f46e5;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .form-group small {
+            color: #6b7280;
+            font-size: 0.9em;
+            margin-top: 5px;
+            display: block;
+        }
+
+        .url-preview {
+            background: #e0e7ff;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 30px 0;
+            border: 2px solid #c7d2fe;
+        }
+
+        .url-preview h4 {
+            color: #4f46e5;
+            margin-bottom: 15px;
+        }
+
+        .url-text {
+            font-family: monospace;
+            font-size: 0.95em;
+            color: #4338ca;
+            word-break: break-all;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #c7d2fe;
+            margin-bottom: 15px;
+        }
+
+        .qr-preview {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .qr-code-container {
+            display: inline-block;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .actions {
+            text-align: center;
+            margin: 30px 0;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+            position: relative;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .alert-info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-container {
+                padding: 15px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .device-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            th, td {
+                padding: 10px 15px;
+                font-size: 0.9em;
+            }
+            
+            .campaigns-table {
+                overflow-x: auto;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .actions {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn {
+                width: 100%;
+                max-width: 300px;
+            }
+
+            .modal-content {
+                width: 95%;
+                margin: 5% auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h1 style="font-size: 2.5em; margin-bottom: 10px;">📊 Dashboard QR Analytics</h1>
+            <p style="font-size: 1.1em; opacity: 0.9;">Estadísticas de campañas QR - Últimos 30 días</p>
+        </div>
+
+        <!-- Estadísticas generales -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="totalScans">0</div>
+                <div class="stat-label">Total Escaneos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="completedRedirects">0</div>
+                <div class="stat-label">Redirecciones Completadas</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="activeCampaigns">0</div>
+                <div class="stat-label">Campañas Activas</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalClients">0</div>
+                <div class="stat-label">Clientes Totales</div>
+            </div>
+        </div>
+
+        <!-- Estadísticas por campaña -->
+        <div class="campaigns-table">
+            <div class="table-header">
+                <h2 style="margin: 0; color: #374151;">📈 Rendimiento por Campaña</h2>
+            </div>
+            <div class="table-content">
+                <div id="campaignsTableContainer">
+                    <div style="padding: 40px; text-align: center; color: #6b7280;">
+                        <p style="font-size: 1.1em;">Cargando datos de campañas...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estadísticas de dispositivos -->
+        <div class="device-stats">
+            <!-- DISPOSITIVOS DE USUARIOS (los que escanean el QR) -->
+            <div class="chart-container">
+                <h3 style="color: #374151; margin-bottom: 20px;">📱 Dispositivos de Usuarios</h3>
+                <small style="color: #6b7280; margin-bottom: 15px; display: block;">
+                    Tipos de dispositivos que escanean los códigos QR
+                </small>
+                <div id="userDevicesContainer">
+                    <p style="color: #6b7280; text-align: center; padding: 20px;">
+                        Cargando datos de dispositivos...
+                    </p>
+                </div>
+            </div>
+
+            <!-- ACTIVIDAD POR HORAS -->
+            <div class="chart-container">
+                <h3 style="color: #374151; margin-bottom: 20px;">🕐 Actividad por Horas</h3>
+                <div id="hourlyContainer">
+                    <p style="color: #6b7280; text-align: center; padding: 20px;">
+                        Cargando datos horarios...
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- DISPOSITIVOS FÍSICOS -->
+        <div class="campaigns-table">
+            <div class="table-header">
+                <h2 style="margin: 0; color: #374151;">🖥️ Rendimiento por Dispositivo Físico</h2>
+                <small style="color: #6b7280; margin-top: 5px; display: block;">
+                    Totems, kioscos y pantallas donde están ubicados los códigos QR
+                </small>
+            </div>
+            <div class="table-content">
+                <div id="physicalDevicesContainer">
+                    <div style="padding: 40px; text-align: center; color: #6b7280;">
+                        <p>Cargando datos de dispositivos físicos...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top venues/ubicaciones -->
+        <div class="chart-container" style="margin-bottom: 30px;">
+            <h3 style="color: #374151; margin-bottom: 20px;">🏢 Top Venues</h3>
+            <div id="venuesContainer">
+                <p style="color: #6b7280; text-align: center; padding: 20px;">
+                    Cargando datos de venues...
+                </p>
+            </div>
+        </div>
+
+        <!-- Botones de acción -->
+        <div style="text-align: center; margin-top: 40px;">
+            <button onclick="openURLBuilder()" class="btn btn-primary" style="margin-right: 15px;">
+                🔗 Constructor de URLs
+            </button>
+            <button onclick="openQRGenerator()" class="btn btn-primary" style="margin-right: 15px;">
+                📱 Generar Códigos QR
+            </button>
+            <button onclick="refreshDashboard()" class="btn btn-outline">
+                🔄 Actualizar Datos
+            </button>
+        </div>
+
+        <!-- Información del Sistema -->
+        <div style="background: white; border-radius: 15px; padding: 30px; margin-top: 30px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);">
+            <h3 style="color: #374151; margin-bottom: 20px;">ℹ️ Información del Sistema</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                <div>
+                    <p><strong>URL del Sistema:</strong></p>
+                    <p style="color: #4f46e5; font-family: monospace; font-size: 0.9em;" id="systemURL">
+                        Cargando URL base...
+                    </p>
+                </div>
+                <div>
+                    <p><strong>Ejemplo completo:</strong></p>
+                    <p style="color: #6b7280; font-size: 0.9em; word-break: break-all;" id="exampleURL">
+                        Cargando ejemplo...
+                    </p>
+                </div>
+                <div>
+                    <p><strong>Versión del Sistema:</strong></p>
+                    <p style="color: #6b7280;">2.4.0 - Dashboard Integrado</p>
+                </div>
+                <div>
+                    <p><strong>Características Activas:</strong></p>
+                    <p style="color: #6b7280; font-size: 0.9em;">Device Tracking, Physical Devices, URL Builder Integrado</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div style="text-align: center; margin-top: 40px; color: #6b7280;">
+            <p>&copy; 2024 QR Tracking System - Datos actualizados automáticamente</p>
+        </div>
+    </div>
+
+    <!-- Modal para URL Builder -->
+    <div id="urlBuilderModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🔗 Constructor de URLs para QR</h2>
+                <span class="close" onclick="closeURLBuilder()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <!-- Alertas dentro del modal -->
+                <div id="modalAlerts"></div>
+
+                <!-- Formulario Constructor -->
+                <div class="builder-form">
+                    <div class="form-grid">
+                        <!-- Sección Cliente y Campaña -->
+                        <div class="form-section">
+                            <h3>📋 Información de la Campaña</h3>
+                            
+                            <div class="form-group">
+                                <label for="client">Cliente *</label>
+                                <input type="text" id="client" placeholder="Ej: Coca Cola, Nike, Samsung" required>
+                                <small>Nombre del cliente o marca</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="campaign_code">Código de Campaña *</label>
+                                <input type="text" id="campaign_code" placeholder="Ej: promo_verano_2024" required>
+                                <small>Solo letras, números, guiones (-) y guiones bajos (_)</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="destination">URL de Destino *</label>
+                                <input type="url" id="destination" placeholder="https://instagram.com/usuario" required>
+                                <small>Instagram, TikTok, sitio web, etc.</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="description">Descripción</label>
+                                <textarea id="description" rows="2" placeholder="Descripción de la campaña"></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Sección Dispositivo -->
+                        <div class="form-section">
+                            <h3>📱 Dispositivo Físico</h3>
+                            
+                            <div class="form-group">
+                                <label for="device_id">ID del Dispositivo *</label>
+                                <input type="text" id="device_id" placeholder="Ej: totem_centro_comercial_01" required>
+                                <small>Identificador único del dispositivo físico</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="device_name">Nombre del Dispositivo</label>
+                                <input type="text" id="device_name" placeholder="Ej: Totem Principal Entrada">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="location">Ubicación</label>
+                                <input type="text" id="location" placeholder="Ej: Entrada Principal - Planta Baja">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="venue">Venue</label>
+                                <input type="text" id="venue" placeholder="Ej: Centro Comercial Sambil">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="device_type">Tipo de Dispositivo</label>
+                                <select id="device_type">
+                                    <option value="">Seleccionar tipo...</option>
+                                    <option value="Totem Interactivo">Totem Interactivo</option>
+                                    <option value="Pantalla LED">Pantalla LED</option>
+                                    <option value="Kiosco">Kiosco</option>
+                                    <option value="Valla Digital">Valla Digital</option>
+                                    <option value="Display Móvil">Display Móvil</option>
+                                    <option value="Otro">Otro</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Preview de URL -->
+                    <div class="url-preview" id="urlPreview" style="display: none;">
+                        <h4>🔗 URL Generada</h4>
+                        <div class="url-text" id="generatedUrl">
+                            La URL aparecerá aquí cuando completes los campos obligatorios
+                        </div>
+                        
+                        <!-- Preview del QR -->
+                        <div class="qr-preview">
+                            <div class="qr-code-container">
+                                <div id="qrCode">
+                                    <p style="color: #6b7280;">El código QR aparecerá aquí</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Acciones -->
+                    <div class="actions">
+                        <button id="generateBtn" class="btn btn-primary" onclick="generateURL()">
+                            🚀 Generar URL y QR
+                        </button>
+                        <button id="copyBtn" class="btn btn-secondary" onclick="copyURL()" style="display: none;">
+                            📋 Copiar URL
+                        </button>
+                        <button id="downloadQRBtn" class="btn btn-success" onclick="downloadQR()" style="display: none;">
+                            💾 Descargar QR
+                        </button>
+                        <button class="btn btn-outline" onclick="clearForm()">
+                            🔄 Limpiar Formulario
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Incluir librerías externas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js"></script>
+    
+    <script>
+        // Variables globales
+        let BASE_URL = window.location.origin;
+        let currentQRDataURL = '';
+        let dashboardData = {};
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            detectBaseURL();
+            loadDashboardData();
+            updateSystemInfo();
+            
+            // Auto-refresh cada 5 minutos
+            setInterval(refreshDashboard, 300000);
+        });
+
+        // Detectar URL base automáticamente
+        function detectBaseURL() {
+            BASE_URL = window.location.origin;
+            console.log('Base URL detectada:', BASE_URL);
+        }
+
+        // Cargar datos del dashboard
+        async function loadDashboardData() {
+            try {
+                // Simular datos para demostración
+                // En un entorno real, estas serían llamadas a APIs
+                dashboardData = {
+                    stats: {
+                        total_scans: 1250,
+                        completed_redirects: 1089,
+                        active_campaigns: 15,
+                        total_clients: 8
+                    },
+                    campaigns: [
+                        {
+                            campaign: 'promo_verano_2024',
+                            client: 'Nike',
+                            scans: 350,
+                            completions: 298,
+                            avg_duration: 12.5,
+                            last_scan: '2024-08-20T15:30:00'
+                        },
+                        {
+                            campaign: 'black_friday_tech',
+                            client: 'Samsung',
+                            scans: 287,
+                            completions: 251,
+                            avg_duration: 8.2,
+                            last_scan: '2024-08-19T20:15:00'
+                        },
+                        {
+                            campaign: 'nuevos_productos',
+                            client: 'Coca Cola',
+                            scans: 198,
+                            completions: 167,
+                            avg_duration: 15.8,
+                            last_scan: '2024-08-18T11:45:00'
+                        }
+                    ],
+                    user_devices: [
+                        {
+                            device_type: 'Mobile',
+                            browser: 'Chrome',
+                            operating_system: 'Android',
+                            count: 654
+                        },
+                        {
+                            device_type: 'Mobile',
+                            browser: 'Safari',
+                            operating_system: 'iOS',
+                            count: 432
+                        },
+                        {
+                            device_type: 'Desktop',
+                            browser: 'Chrome',
+                            operating_system: 'Windows',
+                            count: 89
+                        }
+                    ],
+                    physical_devices: [
+                        {
+                            device_id: 'totem_centro_01',
+                            device_name: 'Totem Principal Entrada',
+                            location: 'Entrada Principal',
+                            venue: 'Centro Comercial Plaza',
+                            device_type: 'Totem Interactivo',
+                            scans: 567,
+                            completions: 489,
+                            avg_duration: 11.2
+                        },
+                        {
+                            device_id: 'pantalla_food_court',
+                            device_name: 'Pantalla Food Court',
+                            location: 'Área de Comidas',
+                            venue: 'Centro Comercial Plaza',
+                            device_type: 'Pantalla LED',
+                            scans: 342,
+                            completions: 298,
+                            avg_duration: 9.8
+                        }
+                    ],
+                    hourly: [
+                        { hour: 9, scans: 45 },
+                        { hour: 10, scans: 67 },
+                        { hour: 11, scans: 89 },
+                        { hour: 12, scans: 134 },
+                        { hour: 13, scans: 156 },
+                        { hour: 14, scans: 145 },
+                        { hour: 15, scans: 167 },
+                        { hour: 16, scans: 189 },
+                        { hour: 17, scans: 201 },
+                        { hour: 18, scans: 178 },
+                        { hour: 19, scans: 134 },
+                        { hour: 20, scans: 98 }
+                    ],
+                    venues: [
+                        {
+                            venue: 'Centro Comercial Plaza',
+                            scans: 909,
+                            completions: 787,
+                            devices_count: 5
+                        },
+                        {
+                            venue: 'Mall del Norte',
+                            scans: 341,
+                            completions: 302,
+                            devices_count: 3
+                        }
+                    ]
+                };
+
+                updateDashboardUI();
+
+            } catch (error) {
+                console.error('Error cargando datos:', error);
+                showAlert('Error cargando datos del dashboard', 'error');
+            }
+        }
+
+        // Actualizar interfaz del dashboard
+        function updateDashboardUI() {
+            // Actualizar estadísticas generales
+            document.getElementById('totalScans').textContent = dashboardData.stats.total_scans || 0;
+            document.getElementById('completedRedirects').textContent = dashboardData.stats.completed_redirects || 0;
+            document.getElementById('activeCampaigns').textContent = dashboardData.stats.active_campaigns || 0;
+            document.getElementById('totalClients').textContent = dashboardData.stats.total_clients || 0;
+
+            // Actualizar tabla de campañas
+            updateCampaignsTable();
+
+            // Actualizar dispositivos de usuarios
+            updateUserDevices();
+
+            // Actualizar datos horarios
+            updateHourlyData();
+
+            // Actualizar dispositivos físicos
+            updatePhysicalDevices();
+
+            // Actualizar venues
+            updateVenues();
+        }
+
+        // Actualizar tabla de campañas
+        function updateCampaignsTable() {
+            const container = document.getElementById('campaignsTableContainer');
+            
+            if (!dashboardData.campaigns || dashboardData.campaigns.length === 0) {
+                container.innerHTML = `
+                    <div style="padding: 40px; text-align: center; color: #6b7280;">
+                        <p style="font-size: 1.1em;">No hay datos de campañas disponibles</p>
+                        <p>Los datos aparecerán cuando se registren escaneos de códigos QR</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let tableHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Campaña</th>
+                            <th>Cliente</th>
+                            <th>Escaneos</th>
+                            <th>Completados</th>
+                            <th>Tasa de Éxito</th>
+                            <th>Duración Promedio</th>
+                            <th>Último Escaneo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            dashboardData.campaigns.forEach(campaign => {
+                const successRate = campaign.scans > 0 ? (campaign.completions / campaign.scans * 100) : 0;
+                const successClass = successRate >= 80 ? 'success-high' : successRate >= 60 ? 'success-medium' : 'success-low';
+                const lastScanDate = campaign.last_scan ? new Date(campaign.last_scan).toLocaleDateString('es-ES') : 'N/A';
+
+                tableHTML += `
+                    <tr>
+                        <td><strong>${campaign.campaign}</strong></td>
+                        <td>${campaign.client}</td>
+                        <td>${campaign.scans}</td>
+                        <td>${campaign.completions}</td>
+                        <td>
+                            <span class="success-rate ${successClass}">
+                                ${successRate.toFixed(1)}%
+                            </span>
+                        </td>
+                        <td>
+                            ${campaign.avg_duration ? campaign.avg_duration.toFixed(1) + 's' : 'N/A'}
+                        </td>
+                        <td>${lastScanDate}</td>
+                    </tr>
+                `;
+            });
+
+            tableHTML += `
+                    </tbody>
+                </table>
+            `;
+
+            container.innerHTML = tableHTML;
+        }
+
+        // Actualizar dispositivos de usuarios
+        function updateUserDevices() {
+            const container = document.getElementById('userDevicesContainer');
+            
+            if (!dashboardData.user_devices || dashboardData.user_devices.length === 0) {
+                container.innerHTML = `
+                    <p style="color: #6b7280; text-align: center; padding: 20px;">
+                        No hay datos de dispositivos de usuarios disponibles
+                    </p>
+                `;
+                return;
+            }
+
+            const maxCount = Math.max(...dashboardData.user_devices.map(d => d.count));
+            let devicesHTML = '';
+
+            dashboardData.user_devices.slice(0, 8).forEach(device => {
+                const deviceIcon = device.device_type === 'Mobile' ? '📱' : 
+                                 device.device_type === 'Tablet' ? '📟' : '🖥️';
+                const deviceClass = device.device_type === 'Mobile' ? 'device-type-mobile' : 
+                                  device.device_type === 'Tablet' ? 'device-type-tablet' : 'device-type-desktop';
+
+                devicesHTML += `
+                    <div class="device-item">
+                        <div class="device-info">
+                            <div style="display: flex; align-items: center; margin-bottom: 5px;">
+                                <span class="device-icon ${deviceClass}">${deviceIcon}</span>
+                                <strong>${device.device_type} - ${device.browser}</strong>
+                            </div>
+                            <small style="color: #6b7280; margin-left: 35px;">${device.operating_system}</small>
+                        </div>
+                        <div style="text-align: right;">
+                            <strong>${device.count}</strong>
+                            <div class="progress-bar-horizontal" style="width: 150px;">
+                                <div class="progress-fill-horizontal" 
+                                     style="width: ${(device.count / maxCount * 100)}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = devicesHTML;
+        }
+
+        // Actualizar datos horarios
+        function updateHourlyData() {
+            const container = document.getElementById('hourlyContainer');
+            
+            if (!dashboardData.hourly || dashboardData.hourly.length === 0) {
+                container.innerHTML = `
+                    <p style="color: #6b7280; text-align: center; padding: 20px;">
+                        No hay datos horarios disponibles
+                    </p>
+                `;
+                return;
+            }
+
+            const maxScans = Math.max(...dashboardData.hourly.map(h => h.scans));
+            let hourlyHTML = '';
+
+            dashboardData.hourly.forEach(hourData => {
+                hourlyHTML += `
+                    <div class="device-item">
+                        <div>
+                            <strong>${hourData.hour}:00</strong>
+                        </div>
+                        <div style="text-align: right;">
+                            <strong>${hourData.scans}</strong>
+                            <div class="progress-bar-horizontal" style="width: 150px;">
+                                <div class="progress-fill-horizontal" 
+                                     style="width: ${maxScans > 0 ? (hourData.scans / maxScans * 100) : 0}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = hourlyHTML;
+        }
+
+        // Actualizar dispositivos físicos
+        function updatePhysicalDevices() {
+            const container = document.getElementById('physicalDevicesContainer');
+            
+            if (!dashboardData.physical_devices || dashboardData.physical_devices.length === 0) {
+                container.innerHTML = `
+                    <div style="padding: 40px; text-align: center; color: #6b7280;">
+                        <h3>No hay dispositivos físicos registrados</h3>
+                        <p>Agrega dispositivos físicos usando el Constructor de URLs</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let tableHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Dispositivo</th>
+                            <th>Ubicación</th>
+                            <th>Venue</th>
+                            <th>Tipo</th>
+                            <th>Escaneos</th>
+                            <th>Completados</th>
+                            <th>Tasa Éxito</th>
+                            <th>Duración Prom.</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            dashboardData.physical_devices.slice(0, 10).forEach(device => {
+                const successRate = device.scans > 0 ? (device.completions / device.scans * 100) : 0;
+                const successClass = successRate >= 80 ? 'success-high' : successRate >= 60 ? 'success-medium' : 'success-low';
+
+                tableHTML += `
+                    <tr>
+                        <td><strong>${device.device_name || device.device_id}</strong></td>
+                        <td>${device.location || 'N/A'}</td>
+                        <td>${device.venue || 'N/A'}</td>
+                        <td>${device.device_type || 'N/A'}</td>
+                        <td>${device.scans || 0}</td>
+                        <td>${device.completions || 0}</td>
+                        <td>
+                            <span class="success-rate ${successClass}">
+                                ${successRate.toFixed(1)}%
+                            </span>
+                        </td>
+                        <td>
+                            ${device.avg_duration ? device.avg_duration.toFixed(1) + 's' : 'N/A'}
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tableHTML += `
+                    </tbody>
+                </table>
+            `;
+
+            container.innerHTML = tableHTML;
+        }
+
+        // Actualizar venues
+        function updateVenues() {
+            const container = document.getElementById('venuesContainer');
+            
+            if (!dashboardData.venues || dashboardData.venues.length === 0) {
+                container.innerHTML = `
+                    <p style="color: #6b7280; text-align: center; padding: 20px;">
+                        No hay datos de venues disponibles
+                    </p>
+                `;
+                return;
+            }
+
+            const maxVenueScans = Math.max(...dashboardData.venues.map(v => v.scans));
+            let venuesHTML = '';
+
+            dashboardData.venues.slice(0, 5).forEach(venue => {
+                venuesHTML += `
+                    <div class="device-item">
+                        <div class="device-info">
+                            <strong>${venue.venue || 'Venue desconocido'}</strong>
+                            <small style="color: #6b7280;">
+                                ${venue.devices_count} dispositivos activos
+                            </small>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="margin-bottom: 5px;">
+                                <strong>${venue.scans}</strong> escaneos
+                                <small style="color: #6b7280;">(${venue.completions} completados)</small>
+                            </div>
+                            <div class="progress-bar-horizontal" style="width: 200px;">
+                                <div class="progress-fill-horizontal" 
+                                     style="width: ${(venue.scans / maxVenueScans * 100)}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = venuesHTML;
+        }
+
+        // Actualizar información del sistema
+        function updateSystemInfo() {
+            document.getElementById('systemURL').textContent = `${BASE_URL}/track?campaign=CODIGO`;
+            document.getElementById('exampleURL').textContent = `${BASE_URL}/track?campaign=promo2024&client=Nike&device_id=totem01`;
+        }
+
+        // Refrescar dashboard
+        function refreshDashboard() {
+            loadDashboardData();
+            showAlert('📊 Datos del dashboard actualizados', 'success');
+        }
+
+        // Abrir constructor de URLs
+        function openURLBuilder() {
+            document.getElementById('urlBuilderModal').style.display = 'block';
+        }
+
+        // Cerrar constructor de URLs
+        function closeURLBuilder() {
+            document.getElementById('urlBuilderModal').style.display = 'none';
+        }
+
+        // Abrir generador de QR (placeholder)
+        function openQRGenerator() {
+            openURLBuilder(); // Por ahora redirige al constructor de URLs
+            showAlert('🔗 Usa el Constructor de URLs para generar códigos QR', 'info');
+        }
+
+        // Cerrar modal al hacer clic fuera
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('urlBuilderModal');
+            if (event.target === modal) {
+                closeURLBuilder();
+            }
+        });
+
+        // === FUNCIONES DEL URL BUILDER ===
+
+        // Elementos del DOM del URL Builder
+        function getBuilderElements() {
+            return {
+                clientInput: document.getElementById('client'),
+                campaignCodeInput: document.getElementById('campaign_code'),
+                destinationInput: document.getElementById('destination'),
+                descriptionInput: document.getElementById('description'),
+                deviceIdInput: document.getElementById('device_id'),
+                deviceNameInput: document.getElementById('device_name'),
+                locationInput: document.getElementById('location'),
+                venueInput: document.getElementById('venue'),
+                deviceTypeSelect: document.getElementById('device_type'),
+                urlPreview: document.getElementById('urlPreview'),
+                generatedUrl: document.getElementById('generatedUrl'),
+                qrCode: document.getElementById('qrCode'),
+                copyBtn: document.getElementById('copyBtn'),
+                downloadQRBtn: document.getElementById('downloadQRBtn')
+            };
+        }
+
+        // Mostrar alertas dentro del modal
+        function showAlert(message, type = 'info') {
+            const alertsContainer = document.getElementById('modalAlerts');
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button style="position: absolute; right: 15px; top: 15px; background: none; border: none; font-size: 1.2em; cursor: pointer; color: inherit;" onclick="this.parentElement.remove()">×</button>
+            `;
+            alertsContainer.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                if (alertDiv.parentElement) {
+                    alertDiv.remove();
+                }
+            }, 8000);
+        }
+
+        // Generar URL completa
+        function generateURL() {
+            const elements = getBuilderElements();
+            
+            const client = elements.clientInput.value.trim();
+            const campaign = elements.campaignCodeInput.value.trim();
+            const destination = elements.destinationInput.value.trim();
+            const deviceId = elements.deviceIdInput.value.trim();
+
+            // Validaciones
+            if (!client) {
+                showAlert('⚠️ El campo Cliente es obligatorio', 'error');
+                elements.clientInput.focus();
+                return;
+            }
+
+            if (!campaign) {
+                showAlert('⚠️ El campo Código de Campaña es obligatorio', 'error');
+                elements.campaignCodeInput.focus();
+                return;
+            }
+
+            if (!destination) {
+                showAlert('⚠️ El campo URL de Destino es obligatorio', 'error');
+                elements.destinationInput.focus();
+                return;
+            }
+
+            if (!deviceId) {
+                showAlert('⚠️ El campo ID del Dispositivo es obligatorio', 'error');
+                elements.deviceIdInput.focus();
+                return;
+            }
+
+            // Validar formato del código de campaña
+            if (!/^[a-zA-Z0-9_-]+$/.test(campaign)) {
+                showAlert('⚠️ El código de campaña solo puede contener letras, números, guiones y guiones bajos', 'error');
+                elements.campaignCodeInput.focus();
+                return;
+            }
+
+            // Construir URL
+            const url = `${BASE_URL}/track?campaign=${encodeURIComponent(campaign)}&client=${encodeURIComponent(client)}&destination=${encodeURIComponent(destination)}&device_id=${encodeURIComponent(deviceId)}`;
+            
+            // Mostrar preview
+            elements.generatedUrl.textContent = url;
+            elements.urlPreview.style.display = 'block';
+            elements.copyBtn.style.display = 'inline-block';
+
+            // Generar QR
+            generateQR(url);
+
+            showAlert('✅ URL y QR generados exitosamente', 'success');
+        }
+
+        // Generar código QR
+        async function generateQR(url) {
+            const elements = getBuilderElements();
+            
+            try {
+                currentQRDataURL = await QRCode.toDataURL(url, {
+                    width: 256,
+                    height: 256,
+                    color: {
+                        dark: '#4f46e5',
+                        light: '#ffffff'
+                    },
+                    errorCorrectionLevel: 'M',
+                    margin: 2
+                });
+
+                elements.qrCode.innerHTML = `
+                    <img src="${currentQRDataURL}" alt="Código QR" 
+                         style="max-width: 100%; height: auto; border-radius: 8px;">
+                `;
+
+                elements.downloadQRBtn.style.display = 'inline-block';
+
+            } catch (error) {
+                console.error('Error generando QR:', error);
+                elements.qrCode.innerHTML = '<p style="color: #dc2626;">Error generando QR</p>';
+            }
+        }
+
+        // Copiar URL
+        async function copyURL() {
+            const elements = getBuilderElements();
+            
+            try {
+                await navigator.clipboard.writeText(elements.generatedUrl.textContent);
+                elements.copyBtn.textContent = '✅ Copiado';
+                elements.copyBtn.style.background = '#10b981';
+                
+                setTimeout(() => {
+                    elements.copyBtn.textContent = '📋 Copiar URL';
+                    elements.copyBtn.style.background = '#6b7280';
+                }, 2000);
+                
+                showAlert('📋 URL copiada al portapapeles', 'success');
+                
+            } catch (error) {
+                console.error('Error copiando URL:', error);
+                
+                // Fallback
+                const textArea = document.createElement('textarea');
+                textArea.value = elements.generatedUrl.textContent;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                showAlert('📋 URL copiada al portapapeles', 'success');
+            }
+        }
+
+        // Descargar QR
+        function downloadQR() {
+            const elements = getBuilderElements();
+            
+            if (!currentQRDataURL) {
+                showAlert('⚠️ Primero genera el código QR', 'error');
+                return;
+            }
+
+            const link = document.createElement('a');
+            link.download = `QR_${elements.campaignCodeInput.value || 'campaign'}_${elements.deviceIdInput.value || 'device'}_${new Date().toISOString().split('T')[0]}.png`;
+            link.href = currentQRDataURL;
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showAlert('💾 Código QR descargado', 'success');
+        }
+
+        // Limpiar formulario
+        function clearForm() {
+            const elements = getBuilderElements();
+            
+            document.querySelectorAll('#urlBuilderModal input, #urlBuilderModal textarea, #urlBuilderModal select').forEach(element => {
+                element.value = '';
+            });
+            
+            elements.urlPreview.style.display = 'none';
+            elements.copyBtn.style.display = 'none';
+            elements.downloadQRBtn.style.display = 'none';
+            currentQRDataURL = '';
+            
+            showAlert('🔄 Formulario limpiado', 'info');
+        }
+
+        // Validaciones en tiempo real
+        document.addEventListener('DOMContentLoaded', function() {
+            const campaignCodeInput = document.getElementById('campaign_code');
+            if (campaignCodeInput) {
+                campaignCodeInput.addEventListener('input', function() {
+                    const value = this.value;
+                    const isValid = /^[a-zA-Z0-9_-]*$/.test(value);
+                    
+                    if (!isValid && value.length > 0) {
+                        this.style.borderColor = '#dc2626';
+                        this.style.backgroundColor = '#fee2e2';
+                    } else {
+                        this.style.borderColor = '#e5e7eb';
+                        this.style.backgroundColor = 'white';
+                    }
+                });
+            }
+        });
+
+        // Logging y debug
+        console.log('🚀 QR Tracking Dashboard v2.4.0 Integrado cargado');
+        console.log('📊 Funcionalidades: Dashboard + URL Builder + QR Generator');
+        console.log('🔗 Base URL:', BASE_URL);
+    </script>
+</body>
+</html>
+                
