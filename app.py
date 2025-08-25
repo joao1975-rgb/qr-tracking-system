@@ -694,7 +694,7 @@ async def delete_campaign(campaign_code: str):
 @app.get("/api/devices")
 async def get_devices():
     """Obtener todos los dispositivos"""
->>>>>>> fb48b359afc889170368b7375b332b1c3585d2ab
+
     try:
         with get_db_connection() as conn:
             cursor = conn.cursor()
@@ -728,7 +728,7 @@ async def get_devices():
             cursor = conn.cursor()
             cursor.execute("""
 =======
->>>>>>> fb48b359afc889170368b7375b332b1c3585d2ab
+
                 SELECT * FROM physical_devices 
                 ORDER BY created_at DESC
             """)
@@ -841,15 +841,13 @@ async def update_device(device_id: str, device_update: DeviceUpdate):
             query = f"UPDATE physical_devices SET {', '.join(update_fields)} WHERE device_id = ?"
             cursor.execute(query, values)
             conn.commit()
-<<<<<<< HEAD
         
         logger.info(f"Dispositivo actualizado: {device_id}")
         return {"success": True, "message": "Dispositivo actualizado exitosamente"}
-=======
             
-            # Obtener el dispositivo actualizado
-            cursor.execute("SELECT * FROM physical_devices WHERE device_id = ?", (device_id,))
-            updated_device = dict(cursor.fetchone())
+        # Obtener el dispositivo actualizado
+        cursor.execute("SELECT * FROM physical_devices WHERE device_id = ?", (device_id,))
+        updated_device = dict(cursor.fetchone())
         
         logger.info(f"Dispositivo actualizado: {device_id}")
         return {
@@ -857,12 +855,11 @@ async def update_device(device_id: str, device_update: DeviceUpdate):
             "message": "Dispositivo actualizado exitosamente",
             "device": updated_device
         }
->>>>>>> fb48b359afc889170368b7375b332b1c3585d2ab
+
     except Exception as e:
         logger.error(f"Error actualizando dispositivo: {e}")
         return {"success": False, "error": str(e)}
 
-<<<<<<< HEAD
 @app.get("/api/devices/{device_id}")
 async def get_device(device_id: str):
     """Obtener un dispositivo específico"""
@@ -889,17 +886,14 @@ async def get_device(device_id: str):
 @app.delete("/api/devices/{device_id}")
 async def delete_device(device_id: str):
     """Eliminar dispositivo FÍSICAMENTE de la base de datos"""
-=======
 @app.delete("/api/devices/{device_id}")
 async def delete_device(device_id: str):
     """Eliminar dispositivo completamente"""
->>>>>>> fb48b359afc889170368b7375b332b1c3585d2ab
     try:
         with get_db_connection() as conn:
             cursor = conn.cursor()
             
             # Verificar que el dispositivo existe
-<<<<<<< HEAD
             cursor.execute("SELECT id FROM physical_devices WHERE device_id = ?", (device_id,))
             device_record = cursor.fetchone()
             if not device_record:
@@ -961,21 +955,20 @@ async def toggle_device_status(device_id: str):
         }
     except Exception as e:
         logger.error(f"Error cambiando estado del dispositivo: {e}")
-=======
-            cursor.execute("SELECT id, device_name FROM physical_devices WHERE device_id = ?", (device_id,))
-            device_row = cursor.fetchone()
-            if not device_row:
+        cursor.execute("SELECT id, device_name FROM physical_devices WHERE device_id = ?", (device_id,))
+        device_row = cursor.fetchone()
+        if not device_row:
                 return {"success": False, "error": "Dispositivo no encontrado"}
             
-            device_name = device_row["device_name"]
+        device_name = device_row["device_name"]
             
             # Eliminar el dispositivo completamente
-            cursor.execute("DELETE FROM physical_devices WHERE device_id = ?", (device_id,))
+        cursor.execute("DELETE FROM physical_devices WHERE device_id = ?", (device_id,))
             
-            if cursor.rowcount == 0:
+        if cursor.rowcount == 0:
                 return {"success": False, "error": "No se pudo eliminar el dispositivo"}
             
-            conn.commit()
+        conn.commit()
         
         logger.info(f"Dispositivo eliminado: {device_id} - {device_name}")
         return {
@@ -984,7 +977,6 @@ async def toggle_device_status(device_id: str):
         }
     except Exception as e:
         logger.error(f"Error eliminando dispositivo: {e}")
->>>>>>> fb48b359afc889170368b7375b332b1c3585d2ab
         return {"success": False, "error": str(e)}
 
 # ================================
