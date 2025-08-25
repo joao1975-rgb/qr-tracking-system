@@ -77,7 +77,7 @@ class CampaignUpdate(BaseModel):
     active: Optional[bool] = None
 
 class DeviceCreate(BaseModel):
-    device_id: str = Field(..., min_length=1, max_length=100)
+    device_id: Optional[str] = None
     device_name: Optional[str] = None
     device_type: Optional[str] = None
     location: Optional[str] = None
