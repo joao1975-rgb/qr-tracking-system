@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Constructor de URLs QR - QR Tracking</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8fafc;
+            color: #374151;
+            line-height: 1.6;
+        }
+
+        .builder-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 40px 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .builder-form {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .form-section {
+            background: #f8fafc;
+            padding: 25px;
+            border-radius: 12px;
+            border: 2px solid #e5e7eb;
+        }
+
+        .form-section h3 {
+            color: #4f46e5;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .form-group small {
+            color: #6b7280;
+            font-size: 0.9em;
+            margin-top: 5px;
+            display: block;
+        }
+
+        .url-preview {
+            background: #e0e7ff;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 30px 0;
+            border: 2px solid #c7d2fe;
+        }
+
+        .url-preview h4 {
+            color: #4f46e5;
+            margin-bottom: 15px;
+        }
+
+        .url-text {
+            font-family: monospace;
+            font-size: 0.95em;
+            color: #4338ca;
+            word-break: break-all;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #c7d2fe;
+            margin-bottom: 15px;
+        }
+
+        .qr-preview {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .qr-code-container {
+            display: inline-block;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            margin: 5px;
+        }
+
+        .btn-primary {
+            background: #4f46e5;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #4338ca;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #4f46e5;
+            border: 2px solid #4f46e5;
+        }
+
+        .btn-outline:hover {
+            background: #4f46e5;
+            color: white;
+        }
+
+        .actions {
+            text-align: center;
+            margin: 30px 0;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+            position: relative;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .alert-info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+        }
+
+        .devices-admin {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+
+        .devices-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .device-item {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .device-item:hover {
+            border-color: #4f46e5;
+            box-shadow: 0 2px 8px rgba(79, 70, 229, 0.1);
+        }
+
+        .device-item h4 {
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .device-item p {
+            color: #6b7280;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .actions {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="builder-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🔗 Constructor de URLs para QR</h1>
+            <p>Construye URLs personalizadas con cliente, campaña y dispositivo identificados</p>
+        </div>
+
+        <!-- Alertas -->
+        <div id="alerts"></div>
+
+        <!-- Formulario Constructor -->
+        <div class="builder-form">
+            <div class="form-grid">
+                <!-- Sección Cliente y Campaña -->
+                <div class="form-section">
+                    <h3>📋 Información de la Campaña</h3>
+                    
+                    <div class="form-group">
+                        <label for="client">Cliente *</label>
+                        <input type="text" id="client" placeholder="Ej: Coca Cola, Nike, Samsung" required>
+                        <small>Nombre del cliente o marca</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="campaign_code">Código de Campaña *</label>
+                        <input type="text" id="campaign_code" placeholder="Ej: promo_verano_2024" required>
+                        <small>Solo letras, números, guiones (-) y guiones bajos (_)</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="destination">URL de Destino *</label>
+                        <input type="url" id="destination" placeholder="https://instagram.com/usuario" required>
+                        <small>Instagram, TikTok, sitio web, etc.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Descripción</label>
+                        <textarea id="description" rows="2" placeholder="Descripción de la campaña"></textarea>
+                    </div>
+                </div>
+
+                <!-- Sección Dispositivo -->
+                <div class="form-section">
+                    <h3>📱 Dispositivo Físico</h3>
+                    
+                    <div class="form-group">
+                        <label for="device_id">ID del Dispositivo *</label>
+                        <input type="text" id="device_id" placeholder="Ej: totem_centro_comercial_01" required>
+                        <small>Identificador único del dispositivo físico</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="device_name">Nombre del Dispositivo</label>
+                        <input type="text" id="device_name" placeholder="Ej: Totem Principal Entrada">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="location">Ubicación</label>
+                        <input type="text" id="location" placeholder="Ej: Entrada Principal - Planta Baja">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="venue">Venue</label>
+                        <input type="text" id="venue" placeholder="Ej: Centro Comercial Sambil">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="device_type">Tipo de Dispositivo</label>
+                        <select id="device_type">
+                            <option value="">Seleccionar tipo...</option>
+                            <option value="Totem Interactivo">Totem Interactivo</option>
+                            <option value="Pantalla LED">Pantalla LED</option>
+                            <option value="Kiosco">Kiosco</option>
+                            <option value="Valla Digital">Valla Digital</option>
+                            <option value="Display Móvil">Display Móvil</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Preview de URL -->
+            <div class="url-preview" id="urlPreview" style="display: none;">
+                <h4>🔗 URL Generada</h4>
+                <div class="url-text" id="generatedUrl">
+                    La URL aparecerá aquí cuando completes los campos obligatorios
+                </div>
+                
+                <!-- Preview del QR -->
+                <div class="qr-preview">
+                    <div class="qr-code-container">
+                        <div id="qrCode">
+                            <p style="color: #6b7280;">El código QR aparecerá aquí</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Acciones -->
+            <div class="actions">
+                <button id="generateBtn" class="btn btn-primary" onclick="generateURL()">
+                    🚀 Generar URL y QR
+                </button>
+                <button id="copyBtn" class="btn btn-secondary" onclick="copyURL()" style="display: none;">
+                    📋 Copiar URL
+                </button>
+                <button id="downloadQRBtn" class="btn btn-success" onclick="downloadQR()" style="display: none;">
+                    💾 Descargar QR
+                </button>
+                <button class="btn btn-outline" onclick="clearForm()">
+                    🔄 Limpiar Formulario
+                </button>
+            </div>
+        </div>
+
+        <!-- Administración de Dispositivos -->
+        <div class="devices-admin">
+            <h2 style="color: #374151; margin-bottom: 20px;">🖥️ Administrar Dispositivos</h2>
+            
+            <div style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
+                <button class="btn btn-primary" onclick="showAddDeviceForm()">
+                    ➕ Agregar Dispositivo
+                </button>
+                <button class="btn btn-secondary" onclick="loadDevices()">
+                    🔄 Actualizar Lista
+                </button>
+            </div>
+
+            <!-- Formulario para agregar dispositivo (oculto inicialmente) -->
+            <div id="addDeviceForm" style="display: none; background: #f0f9ff; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <h4 style="color: #4f46e5; margin-bottom: 15px;">Agregar Nuevo Dispositivo</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                    <input type="text" id="newDeviceId" placeholder="ID del Dispositivo">
+                    <input type="text" id="newDeviceName" placeholder="Nombre del Dispositivo">
+                    <input type="text" id="newDeviceLocation" placeholder="Ubicación">
+                    <input type="text" id="newDeviceVenue" placeholder="Venue">
+                    <select id="newDeviceType">
+                        <option value="">Tipo...</option>
+                        <option value="Totem Interactivo">Totem Interactivo</option>
+                        <option value="Pantalla LED">Pantalla LED</option>
+                        <option value="Kiosco">Kiosco</option>
+                        <option value="Valla Digital">Valla Digital</option>
+                        <option value="Display Móvil">Display Móvil</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+                </div>
+                <div style="margin-top: 15px;">
+                    <button class="btn btn-primary" onclick="saveNewDevice()">💾 Guardar Dispositivo</button>
+                    <button class="btn btn-secondary" onclick="hideAddDeviceForm()">❌ Cancelar</button>
+                </div>
+            </div>
+
+            <!-- Lista de dispositivos existentes -->
+            <div class="devices-grid" id="devicesList">
+                <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #6b7280;">
+                    <p>Cargando dispositivos...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botones de navegación -->
+        <div style="text-align: center; margin-top: 40px;">
+            <a href="/dashboard" class="btn btn-secondary">
+                📊 Ver Dashboard
+            </a>
+            <a href="/admin/campaigns" class="btn btn-secondary">
+                🛠️ Administrar Campañas
+            </a>
+            <a href="/" class="btn btn-outline">
+                🏠 Página Principal
+            </a>
+        </div>
+    </div>
+
+    <!-- Incluir librería QR -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    
+    <script>
+        // Variables globales
+        const BASE_URL = '{{ base_url }}';
+        let devices = [];
+        let currentQRDataURL = '';
+
+        // Elementos del DOM
+        const clientInput = document.getElementById('client');
+        const campaignCodeInput = document.getElementById('campaign_code');
+        const destinationInput = document.getElementById('destination');
+        const descriptionInput = document.getElementById('description');
+        const deviceIdInput = document.getElementById('device_id');
+        const deviceNameInput = document.getElementById('device_name');
+        const locationInput = document.getElementById('location');
+        const venueInput = document.getElementById('venue');
+        const deviceTypeSelect = document.getElementById('device_type');
+        const urlPreview = document.getElementById('urlPreview');
+        const generatedUrl = document.getElementById('generatedUrl');
+        const qrCode = document.getElementById('qrCode');
+        const copyBtn = document.getElementById('copyBtn');
+        const downloadQRBtn = document.getElementById('downloadQRBtn');
+
+        // Utilidades
+        function showAlert(message, type = 'info') {
+            const alertsContainer = document.getElementById('alerts');
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button style="position: absolute; right: 15px; top: 15px; background: none; border: none; font-size: 1.2em; cursor: pointer; color: inherit;" onclick="this.parentElement.remove()">×</button>
+            `;
+            alertsContainer.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                if (alertDiv.parentElement) {
+                    alertDiv.remove();
+                }
+            }, 8000);
+        }
+
+        // Generar URL completa
+        function generateURL() {
+            const client = clientInput.value.trim();
+            const campaign = campaignCodeInput.value.trim();
+            const destination = destinationInput.value.trim();
+            const deviceId = deviceIdInput.value.trim();
+
+            // Validaciones
+            if (!client) {
+                showAlert('❌ El campo Cliente es obligatorio', 'error');
+                clientInput.focus();
+                return;
+            }
+
+            if (!campaign) {
+                showAlert('❌ El campo Código de Campaña es obligatorio', 'error');
+                campaignCodeInput.focus();
+                return;
+            }
+
+            if (!destination) {
+                showAlert('❌ El campo URL de Destino es obligatorio', 'error');
+                destinationInput.focus();
+                return;
+            }
+
+            if (!deviceId) {
+                showAlert('❌ El campo ID del Dispositivo es obligatorio', 'error');
+                deviceIdInput.focus();
+                return;
+            }
+
+            // Validar formato del código de campaña
+            if (!/^[a-zA-Z0-9_-]+$/.test(campaign)) {
+                showAlert('❌ El código de campaña solo puede contener letras, números, guiones y guiones bajos', 'error');
+                campaignCodeInput.focus();
+                return;
+            }
+
+            // Construir URL
+            const url = `${BASE_URL}/track?campaign=${encodeURIComponent(campaign)}&client=${encodeURIComponent(client)}&destination=${encodeURIComponent(destination)}&device_id=${encodeURIComponent(deviceId)}`;
+            
+            // Mostrar preview
+            generatedUrl.textContent = url;
+            urlPreview.style.display = 'block';
+            copyBtn.style.display = 'inline-block';
+
+            // Generar QR
+            generateQR(url);
+
+            // Guardar campaña automáticamente si no existe
+            saveCampaignIfNeeded(campaign, client, destination, descriptionInput.value.trim());
+
+            // Guardar dispositivo automáticamente si no existe
+            saveDeviceIfNeeded();
+
+            showAlert('✅ URL y QR generados exitosamente', 'success');
+        }
+
+        // Generar código QR
+        async function generateQR(url) {
+            try {
+                currentQRDataURL = await QRCode.toDataURL(url, {
+                    width: 256,
+                    height: 256,
+                    color: {
+                        dark: '#4f46e5',
+                        light: '#ffffff'
+                    },
+                    errorCorrectionLevel: 'M',
+                    margin: 2
+                });
+
+                qrCode.innerHTML = `
+                    <img src="${currentQRDataURL}" alt="Código QR" 
+                         style="max-width: 100%; height: auto; border-radius: 8px;">
+                `;
+
+                downloadQRBtn.style.display = 'inline-block';
+
+            } catch (error) {
+                console.error('Error generando QR:', error);
+                qrCode.innerHTML = '<p style="color: #dc2626;">Error generando QR</p>';
+            }
+        }
+
+        // Copiar URL
+        async function copyURL() {
+            try {
+                await navigator.clipboard.writeText(generatedUrl.textContent);
+                copyBtn.textContent = '✅ Copiado';
+                copyBtn.style.background = '#10b981';
+                
+                setTimeout(() => {
+                    copyBtn.textContent = '📋 Copiar URL';
+                    copyBtn.style.background = '#6b7280';
+                }, 2000);
+                
+                showAlert('📋 URL copiada al portapapeles', 'success');
+                
+            } catch (error) {
+                console.error('Error copiando URL:', error);
+                
+                // Fallback
+                const textArea = document.createElement('textarea');
+                textArea.value = generatedUrl.textContent;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                showAlert('📋 URL copiada al portapapeles', 'success');
+            }
+        }
+
+        // Descargar QR
+        function downloadQR() {
+            if (!currentQRDataURL) {
+                showAlert('❌ Primero genera el código QR', 'error');
+                return;
+            }
+
+            const link = document.createElement('a');
+            link.download = `QR_${campaignCodeInput.value || 'campaign'}_${deviceIdInput.value || 'device'}_${new Date().toISOString().split('T')[0]}.png`;
+            link.href = currentQRDataURL;
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showAlert('💾 Código QR descargado', 'success');
+        }
+
+        // Limpiar formulario
+        function clearForm() {
+            document.querySelectorAll('input, textarea, select').forEach(element => {
+                element.value = '';
+            });
+            
+            urlPreview.style.display = 'none';
+            copyBtn.style.display = 'none';
+            downloadQRBtn.style.display = 'none';
+            currentQRDataURL = '';
+            
+            showAlert('🔄 Formulario limpiado', 'info');
+        }
+
+        // Guardar campaña si no existe
+        async function saveCampaignIfNeeded(campaign, client, destination, description) {
+            try {
+                const response = await fetch('/api/campaigns', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        campaign_code: campaign,
+                        client: client,
+                        destination: destination,
+                        description: description,
+                        active: true
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    console.log('Campaña guardada automáticamente');
+                }
+            } catch (error) {
+                console.error('Error guardando campaña:', error);
+            }
+        }
+
+        // Guardar dispositivo si no existe
+        async function saveDeviceIfNeeded() {
+            const deviceId = deviceIdInput.value.trim();
+            const deviceName = deviceNameInput.value.trim() || deviceId;
+            const location = locationInput.value.trim() || 'Ubicación no especificada';
+            const venue = venueInput.value.trim() || 'Venue no especificado';
+            const deviceType = deviceTypeSelect.value || 'Otro';
+
+            if (!deviceId) return;
+
+            try {
+                const response = await fetch('/api/devices', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        device_id: deviceId,
+                        device_name: deviceName,
+                        location: location,
+                        venue: venue,
+                        device_type: deviceType,
+                        active: true
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    console.log('Dispositivo guardado automáticamente');
+                    loadDevices();
+                }
+            } catch (error) {
+                console.error('Error guardando dispositivo:', error);
+            }
+        }
+
+        // Cargar dispositivos existentes
+        async function loadDevices() {
+            try {
+                const response = await fetch('/api/devices');
+                const data = await response.json();
+                
+                if (data.success) {
+                    devices = data.devices;
+                    renderDevices(devices);
+                } else {
+                    showAlert('❌ Error cargando dispositivos: ' + data.error, 'error');
+                }
+            } catch (error) {
+                console.error('Error cargando dispositivos:', error);
+                document.getElementById('devicesList').innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #dc2626;">
+                        <p>Error cargando dispositivos</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Renderizar dispositivos
+        function renderDevices(deviceList) {
+            const devicesList = document.getElementById('devicesList');
+            
+            if (!deviceList || deviceList.length === 0) {
+                devicesList.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #6b7280;">
+                        <h3>No hay dispositivos registrados</h3>
+                        <p>Agrega tu primer dispositivo usando el formulario de arriba</p>
+                    </div>
+                `;
+                return;
+            }
+
+            devicesList.innerHTML = deviceList.map(device => `
+                <div class="device-item" onclick="selectDevice('${device.device_id}', '${device.device_name}', '${device.location}', '${device.venue}', '${device.device_type}')">
+                    <h4>${device.device_name}</h4>
+                    <p><strong>ID:</strong> ${device.device_id}</p>
+                    <p><strong>Tipo:</strong> ${device.device_type}</p>
+                    <p><strong>Ubicación:</strong> ${device.location}</p>
+                    <p><strong>Venue:</strong> ${device.venue}</p>
+                    <p style="color: ${device.active ? '#10b981' : '#dc2626'};">
+                        ${device.active ? '✅ Activo' : '❌ Inactivo'}
+                    </p>
+                </div>
+            `).join('');
+        }
+
+        // Seleccionar dispositivo existente
+        function selectDevice(deviceId, deviceName, location, venue, deviceType) {
+            deviceIdInput.value = deviceId;
+            deviceNameInput.value = deviceName;
+            locationInput.value = location;
+            venueInput.value = venue;
+            deviceTypeSelect.value = deviceType;
+            
+            showAlert(`📱 Dispositivo "${deviceName}" seleccionado`, 'success');
+        }
+
+        // Mostrar formulario de agregar dispositivo
+        function showAddDeviceForm() {
+            document.getElementById('addDeviceForm').style.display = 'block';
+        }
+
+        // Ocultar formulario de agregar dispositivo
+        function hideAddDeviceForm() {
+            document.getElementById('addDeviceForm').style.display = 'none';
+            // Limpiar campos
+            document.getElementById('newDeviceId').value = '';
+            document.getElementById('newDeviceName').value = '';
+            document.getElementById('newDeviceLocation').value = '';
+            document.getElementById('newDeviceVenue').value = '';
+            document.getElementById('newDeviceType').value = '';
+        }
+
+        // Guardar nuevo dispositivo
+        async function saveNewDevice() {
+            const deviceId = document.getElementById('newDeviceId').value.trim();
+            const deviceName = document.getElementById('newDeviceName').value.trim();
+            const location = document.getElementById('newDeviceLocation').value.trim();
+            const venue = document.getElementById('newDeviceVenue').value.trim();
+            const deviceType = document.getElementById('newDeviceType').value;
+
+            if (!deviceId || !deviceName || !location || !venue || !deviceType) {
+                showAlert('❌ Todos los campos del dispositivo son obligatorios', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/devices', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        device_id: deviceId,
+                        device_name: deviceName,
+                        location: location,
+                        venue: venue,
+                        device_type: deviceType,
+                        active: true
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert('✅ Dispositivo creado exitosamente', 'success');
+                    hideAddDeviceForm();
+                    loadDevices();
+                } else {
+                    showAlert('❌ Error: ' + data.error, 'error');
+                }
+            } catch (error) {
+                console.error('Error guardando dispositivo:', error);
+                showAlert('❌ Error de conexión al guardar dispositivo', 'error');
+            }
+        }
+
+        // Validaciones en tiempo real
+        campaignCodeInput.addEventListener('input', function() {
+            const value = this.value;
+            const isValid = /^[a-zA-Z0-9_-]*$

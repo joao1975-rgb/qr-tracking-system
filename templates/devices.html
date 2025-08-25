@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Dispositivos - QR Tracking System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: #4a5568;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            color: #718096;
+            font-size: 1.2em;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-section h2 {
+            color: #4a5568;
+            margin-bottom: 25px;
+            font-size: 1.8em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            color: #4a5568;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1em;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(72, 187, 120, 0.3);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(237, 137, 54, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(245, 101, 101, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #a0aec0 0%, #718096 100%);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(160, 174, 192, 0.3);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-outline:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .devices-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+            margin-top: 25px;
+        }
+
+        .device-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .device-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            border-color: #667eea;
+        }
+
+        .device-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .device-header h3 {
+            color: #4a5568;
+            font-size: 1.3em;
+            font-weight: 700;
+        }
+
+        .status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background: linear-gradient(135deg, #c6f6d5 0%, #9ae6b4 100%);
+            color: #22543d;
+        }
+
+        .status-inactive {
+            background: linear-gradient(135deg, #fed7d7 0%, #feb2b2 100%);
+            color: #742a2a;
+        }
+
+        .device-info {
+            margin-bottom: 20px;
+        }
+
+        .device-info p {
+            margin-bottom: 8px;
+            color: #4a5568;
+            font-size: 0.95em;
+        }
+
+        .device-info strong {
+            color: #2d3748;
+            font-weight: 600;
+        }
+
+        .device-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 0.9em;
+        }
+
+        .alert {
+            padding: 16px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-weight: 500;
+            position: relative;
+            backdrop-filter: blur(10px);
+        }
+
+        .alert-success {
+            background: rgba(72, 187, 120, 0.9);
+            color: white;
+        }
+
+        .alert-error {
+            background: rgba(245, 101, 101, 0.9);
+            color: white;
+        }
+
+        .alert-info {
+            background: rgba(102, 126, 234, 0.9);
+            color: white;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #718096;
+        }
+
+        .empty-state .icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .stats-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #718096;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .devices-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .device-actions {
+                flex-direction: column;
+            }
+
+            .navigation {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🖥️ Gestión de Dispositivos</h1>
+            <p>Administra los dispositivos físicos de tu red de tracking QR</p>
+        </div>
+
+        <!-- Alertas -->
+        <div id="alerts"></div>
+
+        <!-- Formulario -->
+        <div class="card">
+            <div class="form-section">
+                <h2>➕ Agregar Nuevo Dispositivo</h2>
+                
+                <form id="deviceForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="device_id">ID del Dispositivo *</label>
+                            <input type="text" id="device_id" name="device_id" required 
+                                   placeholder="ej: TOTEM_SAMBIL_001" 
+                                   pattern="[a-zA-Z0-9_-]+" 
+                                   title="Solo letras, números, guiones y guiones bajos">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="device_name">Nombre del Dispositivo *</label>
+                            <input type="text" id="device_name" name="device_name" required 
+                                   placeholder="ej: Totem Principal Entrada">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="device_type">Tipo de Dispositivo *</label>
+                            <select id="device_type" name="device_type" required>
+                                <option value="">Seleccionar tipo...</option>
+                                <option value="Totem Interactivo">Totem Interactivo</option>
+                                <option value="Pantalla LED">Pantalla LED</option>
+                                <option value="Kiosco Digital">Kiosco Digital</option>
+                                <option value="Valla Digital">Valla Digital</option>
+                                <option value="Display Móvil">Display Móvil</option>
+                                <option value="Otro">Otro</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="location">Ubicación *</label>
+                            <input type="text" id="location" name="location" required 
+                                   placeholder="ej: Entrada Principal - Planta Baja">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="venue">Venue *</label>
+                            <input type="text" id="venue" name="venue" required 
+                                   placeholder="ej: Centro Comercial Sambil">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="description">Descripción</label>
+                            <textarea id="description" name="description" rows="3" 
+                                      placeholder="Información adicional del dispositivo..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 25px;">
+                        <label style="display: flex; align-items: center; gap: 10px;">
+                            <input type="checkbox" id="active" name="active" checked>
+                            Dispositivo activo
+                        </label>
+                    </div>
+
+                    <div style="display: flex; gap: 15px; justify-content: center;">
+                        <button type="submit" class="btn btn-primary">
+                            💾 Guardar Dispositivo
+                        </button>
+                        <button type="reset" class="btn btn-secondary">
+                            🔄 Limpiar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Lista de Dispositivos -->
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                <h2 style="margin: 0; color: #4a5568;">📱 Dispositivos Registrados</h2>
+                <button class="btn btn-outline" onclick="loadDevices()">
+                    🔄 Actualizar
+                </button>
+            </div>
+            
+            <div class="devices-grid" id="devicesGrid">
+                <div class="empty-state" style="grid-column: 1 / -1;">
+                    <div class="icon">⏳</div>
+                    <p>Cargando dispositivos...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estadísticas -->
+        <div class="card">
+            <h2 style="color: #4a5568; margin-bottom: 20px;">📊 Estadísticas</h2>
+            <div class="stats-section">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalDevices">0</div>
+                    <div class="stat-label">Total Dispositivos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="activeDevices">0</div>
+                    <div class="stat-label">Dispositivos Activos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="inactiveDevices">0</div>
+                    <div class="stat-label">Dispositivos Inactivos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" style="font-size: 1.2em;" id="lastUpdate">-</div>
+                    <div class="stat-label">Última Actualización</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navegación -->
+        <div class="navigation">
+            <a href="/dashboard" class="btn btn-primary">📊 Dashboard</a>
+            <a href="/admin/campaigns" class="btn btn-secondary">📋 Campañas</a>
+            <a href="/generate-qr" class="btn btn-success">🎯 Generar QR</a>
+            <a href="/" class="btn btn-outline">🏠 Inicio</a>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        const API_BASE = '/api';
+        let devices = [];
+        let editingDeviceId = null;
+
+        // Elementos del DOM
+        const deviceForm = document.getElementById('deviceForm');
+        const alertsContainer = document.getElementById('alerts');
+        const devicesGrid = document.getElementById('devicesGrid');
+
+        // Funciones de utilidad
+        function showAlert(message, type = 'info') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button style="position: absolute; right: 15px; top: 15px; background: none; border: none; font-size: 1.2em; cursor: pointer; color: white;" onclick="this.parentElement.remove()">×</button>
+            `;
+            alertsContainer.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                if (alertDiv.parentElement) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        }
+
+        // API Functions
+        async function apiRequest(endpoint, options = {}) {
+            try {
+                console.log('🌐 Making API request to:', endpoint, options);
+                
+                const response = await fetch(`${API_BASE}${endpoint}`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    },
+                    ...options
+                });
+
+                console.log('📡 Response status:', response.status);
+
+                const data = await response.json();
+                console.log('📋 Response data:', data);
+
+                if (!response.ok) {
+                    console.error('❌ API Error:', response.status, '-', data);
+                    throw new Error(`Error ${response.status}: ${JSON.stringify(data)}`);
+                }
+
+                return data;
+            } catch (error) {
+                console.error('💥 API Request failed:', error);
+                throw error;
+            }
+        }
+
+        async function loadDevices() {
+            try {
+                const data = await apiRequest('/devices');
+                
+                if (data.success) {
+                    devices = data.devices;
+                    renderDevices();
+                    updateStats();
+                } else {
+                    showAlert('❌ Error cargando dispositivos: ' + data.error, 'error');
+                    renderEmptyState();
+                }
+            } catch (error) {
+                console.error('💥 Error loading devices:', error);
+                showAlert('❌ Error de conexión al cargar dispositivos', 'error');
+                renderEmptyState();
+            }
+        }
+
+        async function createOrUpdateDevice(deviceData) {
+            try {
+                const isEditing = editingDeviceId !== null;
+                const endpoint = isEditing ? `/devices/${editingDeviceId}` : '/devices';
+                const method = isEditing ? 'PUT' : 'POST';
+                
+                const data = await apiRequest(endpoint, {
+                    method: method,
+                    body: JSON.stringify(deviceData)
+                });
+                
+                if (data.success) {
+                    const action = isEditing ? 'actualizado' : 'creado';
+                    showAlert(`✅ Dispositivo "${deviceData.device_name}" ${action} exitosamente`, 'success');
+                    resetForm();
+                    await loadDevices();
+                } else {
+                    showAlert(`❌ Error: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                console.error('💥 Error creating/updating device:', error);
+                showAlert('❌ Error de conexión al guardar dispositivo', 'error');
+            }
+        }
+
+        // Función para alternar estado (Pausa/Activar)
+        async function toggleDeviceStatus(deviceId) {
+            try {
+                const device = devices.find(d => d.device_id === deviceId);
+                if (!device) return;
+
+                const newStatus = !device.active;
+                const action = newStatus ? 'activar' : 'pausar';
+                
+                if (!confirm(`¿Estás seguro de ${action} el dispositivo "${device.device_name || device.device_id}"?`)) {
+                    return;
+                }
+
+                console.log('🔄 Cambiando estado del dispositivo:', deviceId, 'a:', newStatus);
+                
+                const updateData = { active: newStatus };
+                const data = await apiRequest(`/devices/${deviceId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(updateData)
+                });
+                
+                if (data.success) {
+                    console.log('✅ Estado cambiado exitosamente');
+                    showAlert(`✅ Dispositivo ${newStatus ? 'activado' : 'pausado'} exitosamente`, 'success');
+                    await loadDevices();
+                } else {
+                    console.error('❌ Error del servidor:', data.error);
+                    showAlert(`❌ Error: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                console.error('💥 Error cambiando estado:', error);
+                showAlert('❌ Error cambiando estado del dispositivo', 'error');
+            }
+        }
+
+        // Función para eliminar permanentemente
+        async function confirmDelete(deviceId) {
+            const device = devices.find(d => d.device_id === deviceId);
+            if (!device) return;
+
+            if (!confirm(`⚠️ ¿Estás seguro de que deseas ELIMINAR PERMANENTEMENTE el dispositivo "${device.device_name || device.device_id}"?\n\nEsta acción NO se puede deshacer.`)) {
+                return;
+            }
+            
+            try {
+                console.log('🗑️ Eliminando dispositivo PERMANENTEMENTE:', deviceId);
+                
+                const data = await apiRequest(`/devices/${deviceId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (data.success) {
+                    console.log('✅ Dispositivo eliminado exitosamente');
+                    showAlert('✅ Dispositivo eliminado permanentemente', 'success');
+                    await loadDevices();
+                } else {
+                    console.error('❌ Error del servidor:', data.error);
+                    showAlert(`❌ Error: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                console.error('💥 Error eliminando dispositivo:', error);
+                showAlert('❌ Error eliminando dispositivo', 'error');
+            }
+        }
+
+        function editDevice(deviceId) {
+            const device = devices.find(d => d.device_id === deviceId);
+            if (!device) return;
+
+            // Llenar formulario
+            document.getElementById('device_id').value = device.device_id;
+            document.getElementById('device_name').value = device.device_name || '';
+            document.getElementById('device_type').value = device.device_type || '';
+            document.getElementById('location').value = device.location || '';
+            document.getElementById('venue').value = device.venue || '';
+            document.getElementById('description').value = device.description || '';
+            document.getElementById('active').checked = device.active;
+
+            // Configurar para edición
+            document.getElementById('device_id').disabled = true;
+            editingDeviceId = deviceId;
+
+            // Cambiar botón
+            const submitBtn = deviceForm.querySelector('button[type="submit"]');
+            submitBtn.innerHTML = '✏️ Actualizar Dispositivo';
+            submitBtn.style.background = 'linear-gradient(135deg, #ed8936 0%, #dd6b20 100%)';
+
+            // Scroll al formulario
+            document.querySelector('.card').scrollIntoView({ behavior: 'smooth' });
+            showAlert(`📝 Editando dispositivo "${device.device_name || device.device_id}"`, 'info');
+        }
+
+        function renderDevices() {
+            if (!devices || devices.length === 0) {
+                renderEmptyState();
+                return;
+            }
+
+            devicesGrid.innerHTML = devices.map(device => `
+                <div class="device-card">
+                    <div class="device-header">
+                        <h3>${device.device_name || device.device_id}</h3>
+                        <span class="status ${device.active ? 'status-active' : 'status-inactive'}">
+                            ${device.active ? 'Activo' : 'Inactivo'}
+                        </span>
+                    </div>
+                    
+                    <div class="device-info">
+                        <p><strong>ID:</strong> ${device.device_id}</p>
+                        <p><strong>Tipo:</strong> ${device.device_type || 'No especificado'}</p>
+                        <p><strong>Ubicación:</strong> ${device.location || 'No especificada'}</p>
+                        <p><strong>Venue:</strong> ${device.venue || 'No especificado'}</p>
+                        ${device.description ? `<p><strong>Descripción:</strong> ${device.description}</p>` : ''}
+                        <p><strong>Creado:</strong> ${new Date(device.created_at).toLocaleDateString('es-ES')}</p>
+                    </div>
+                    
+                    <div class="device-actions">
+                        <button class="btn ${device.active ? 'btn-warning' : 'btn-success'} btn-small" 
+                                onclick="toggleDeviceStatus('${device.device_id}')">
+                            ${device.active ? '⏸️ Pausar' : '▶️ Activar'}
+                        </button>
+                        <button class="btn btn-primary btn-small" onclick="editDevice('${device.device_id}')">
+                            ✏️ Editar
+                        </button>
+                        <button class="btn btn-danger btn-small" onclick="confirmDelete('${device.device_id}')">
+                            🗑️ Eliminar
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderEmptyState() {
+            devicesGrid.innerHTML = `
+                <div class="empty-state" style="grid-column: 1 / -1;">
+                    <div class="icon">🖥️</div>
+                    <h3>No hay dispositivos registrados</h3>
+                    <p>¡Crea tu primer dispositivo usando el formulario de arriba!</p>
+                </div>
+            `;
+        }
+
+        function updateStats() {
+            const total = devices.length;
+            const active = devices.filter(d => d.active).length;
+            const inactive = total - active;
+            const now = new Date().toLocaleString('es-ES');
+
+            document.getElementById('totalDevices').textContent = total;
+            document.getElementById('activeDevices').textContent = active;
+            document.getElementById('inactiveDevices').textContent = inactive;
+            document.getElementById('lastUpdate').textContent = now;
+        }
+
+        function resetForm() {
+            editingDeviceId = null;
+            document.getElementById('device_id').disabled = false;
+            
+            const submitBtn = deviceForm.querySelector('button[type="submit"]');
+            submitBtn.innerHTML = '💾 Guardar Dispositivo';
+            submitBtn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+            
+            deviceForm.reset();
+        }
+
+        // Event Listeners
+        deviceForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(deviceForm);
+            const deviceData = {
+                device_id: formData.get('device_id').trim(),
+                device_name: formData.get('device_name').trim(),
+                device_type: formData.get('device_type'),
+                location: formData.get('location').trim(),
+                venue: formData.get('venue').trim(),
+                description: formData.get('description').trim() || null,
+                active: formData.has('active')
+            };
+
+            // Validaciones
+            if (!deviceData.device_id || !deviceData.device_name || !deviceData.device_type || !deviceData.location || !deviceData.venue) {
+                showAlert('❌ Todos los campos marcados con * son obligatorios', 'error');
+                return;
+            }
+
+            if (!(/^[a-zA-Z0-9_-]+$/.test(deviceData.device_id))) {
+                showAlert('❌ El ID del dispositivo solo puede contener letras, números, guiones y guiones bajos', 'error');
+                return;
+            }
+
+            // Verificar ID único (solo para nuevos)
+            if (!editingDeviceId && devices.some(d => d.device_id === deviceData.device_id)) {
+                showAlert('❌ Ya existe un dispositivo con ese ID', 'error');
+                return;
+            }
+
+            await createOrUpdateDevice(deviceData);
+        });
+
+        deviceForm.addEventListener('reset', resetForm);
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDevices();
+            showAlert('🖥️ Sistema de gestión de dispositivos cargado correctamente', 'info');
+        });
+
+        // Logging
+        console.log('🖥️ Device Management System v2.5.0 - Original Design');
+        console.log('API Base:', API_BASE);
+    </script>
+</body>
+</html>

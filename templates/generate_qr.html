@@ -3,50 +3,221 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generador de Códigos QR</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Generador de Códigos QR - QR Tracking</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8fafc;
+            color: #374151;
+            line-height: 1.6;
+        }
+
         .generator-container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 20px;
-            background: #f8fafc;
             min-height: 100vh;
         }
-        
-        .campaigns-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 20px;
-            margin-top: 30px;
+
+        .header {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 40px 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            text-align: center;
         }
-        
-        .campaign-card {
+
+        .qr-builder {
             background: white;
             border-radius: 15px;
-            padding: 30px;
+            padding: 40px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-            border: 1px solid #e5e7eb;
+            margin-bottom: 30px;
         }
-        
-        .qr-container {
-            text-align: center;
-            margin: 20px 0;
-            padding: 20px;
-            background: #f8fafc;
-            border-radius: 10px;
+
+        .input-section {
+            margin-bottom: 30px;
         }
-        
-        .qr-code {
-            max-width: 200px;
-            max-height: 200px;
-            margin: 0 auto;
-        }
-        
-        .campaign-info {
+
+        .form-group {
             margin-bottom: 20px;
         }
-        
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        .qr-display {
+            text-align: center;
+            background: #f0fdf4;
+            border-radius: 15px;
+            padding: 40px;
+            margin: 30px 0;
+            border: 2px solid #bbf7d0;
+        }
+
+        .qr-code-container {
+            display: inline-block;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .qr-info {
+            background: #e0f2fe;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid #7dd3fc;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #059669;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #10b981;
+            border: 2px solid #10b981;
+        }
+
+        .btn-outline:hover {
+            background: #10b981;
+            color: white;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+            position: relative;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .alert-info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+        }
+
+        .url-input {
+            display: flex;
+            gap: 10px;
+            align-items: end;
+        }
+
+        .url-input input {
+            flex: 1;
+        }
+
+        .size-selector {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            justify-content: center;
+        }
+
+        .size-btn {
+            padding: 8px 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+        }
+
+        .size-btn.active {
+            border-color: #10b981;
+            background: #10b981;
+            color: white;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
         .campaign-url {
             background: #e0e7ff;
             padding: 10px;
@@ -56,29 +227,57 @@
             word-break: break-all;
             color: #4f46e5;
             margin: 10px 0;
+            border: 1px solid #c7d2fe;
         }
-        
-        .action-buttons {
+
+        .environment-selector {
+            background: #fef3c7;
+            border: 1px solid #fbbf24;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .env-toggle {
             display: flex;
             gap: 10px;
-            flex-wrap: wrap;
+            align-items: center;
             justify-content: center;
-            margin-top: 20px;
+            margin-bottom: 10px;
         }
-        
-        .btn-small {
+
+        .env-btn {
             padding: 8px 16px;
+            border: 2px solid #6b7280;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
             font-size: 0.9em;
-            min-width: auto;
+            font-weight: 600;
         }
-        
+
+        .env-btn.active {
+            border-color: #059669;
+            background: #10b981;
+            color: white;
+        }
+
         @media (max-width: 768px) {
-            .campaigns-grid {
-                grid-template-columns: 1fr;
-            }
-            
             .action-buttons {
                 flex-direction: column;
+            }
+
+            .url-input {
+                flex-direction: column;
+            }
+
+            .size-selector {
+                flex-wrap: wrap;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -88,97 +287,182 @@
         <!-- Header -->
         <div class="header">
             <h1>📱 Generador de Códigos QR</h1>
-            <p class="subtitle">Códigos QR para campañas de tracking configuradas</p>
+            <p>Crea códigos QR para tus campañas con dispositivos registrados</p>
         </div>
 
-        <!-- Información general -->
-        <div style="background: white; border-radius: 15px; padding: 30px; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);">
-            <h2 style="color: #374151; margin-bottom: 20px;">ℹ️ Instrucciones</h2>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
-                <div>
-                    <h4 style="color: #4f46e5;">1. Generar QR</h4>
-                    <p style="color: #6b7280;">Haz clic en "Generar QR" para cada campaña</p>
+        <!-- Selector de Ambiente -->
+        <div class="environment-selector">
+            <h4 style="color: #92400e; margin-bottom: 15px; text-align: center;">🌐 Seleccionar Ambiente de Despliegue</h4>
+            <div class="env-toggle">
+                <div class="env-btn active" onclick="selectEnvironment('localhost', this)">
+                    🏠 Localhost
                 </div>
-                <div>
-                    <h4 style="color: #4f46e5;">2. Descargar</h4>
-                    <p style="color: #6b7280;">Descarga la imagen del código QR generado</p>
+                <div class="env-btn" onclick="selectEnvironment('production', this)">
+                    ☁️ Producción (Render)
                 </div>
-                <div>
-                    <h4 style="color: #4f46e5;">3. Implementar</h4>
-                    <p style="color: #6b7280;">Coloca el QR en tus materiales publicitarios</p>
+            </div>
+            <div id="currentEnvironment" style="text-align: center; color: #92400e; font-weight: 600; font-size: 0.9em;">
+                Ambiente actual: <span id="envDisplay">localhost:8000</span>
+            </div>
+        </div>
+
+        <!-- Alertas -->
+        <div id="alerts"></div>
+
+        <!-- Constructor de QR con Campaign + Device -->
+        <div class="qr-builder">
+            <h2 style="color: #374151; margin-bottom: 20px;">🛠️ Generador QR Avanzado</h2>
+            
+            <div class="form-grid">
+                <!-- Selección de Campaña -->
+                <div class="form-group">
+                    <label for="campaignSelect">Seleccionar Campaña *</label>
+                    <select id="campaignSelect" required>
+                        <option value="">Cargando campañas...</option>
+                    </select>
+                    <small style="color: #6b7280; margin-top: 5px; display: block;">
+                        Campañas activas configuradas en el sistema
+                    </small>
                 </div>
-                <div>
-                    <h4 style="color: #4f46e5;">4. Monitorear</h4>
-                    <p style="color: #6b7280;">Revisa las estadísticas en el dashboard</p>
+
+                <!-- Selección de Dispositivo -->
+                <div class="form-group">
+                    <label for="deviceSelect">Seleccionar Dispositivo Físico *</label>
+                    <select id="deviceSelect" required>
+                        <option value="">Cargando dispositivos...</option>
+                    </select>
+                    <small style="color: #6b7280; margin-top: 5px; display: block;">
+                        Dispositivos físicos registrados (totems, pantallas, etc.)
+                    </small>
+                </div>
+            </div>
+
+            <!-- Información de la combinación -->
+            <div id="combinationInfo" class="qr-info" style="display: none;">
+                <h4 style="color: #0c4a6e; margin-bottom: 15px;">📋 Información de la Combinación</h4>
+                <div id="combinationDetails"></div>
+            </div>
+
+            <!-- URL generada -->
+            <div id="generatedUrlSection" class="qr-info" style="display: none;">
+                <h4 style="color: #0c4a6e; margin-bottom: 10px;">🔗 URL Generada</h4>
+                <div id="generatedUrlDisplay" class="campaign-url"></div>
+            </div>
+
+            <!-- Selector de tamaño -->
+            <div class="size-selector">
+                <div class="size-btn active" onclick="selectSize(200, this)">Pequeño (200px)</div>
+                <div class="size-btn" onclick="selectSize(300, this)">Mediano (300px)</div>
+                <div class="size-btn" onclick="selectSize(400, this)">Grande (400px)</div>
+                <div class="size-btn" onclick="selectSize(600, this)">Extra Grande (600px)</div>
+            </div>
+
+            <!-- Display del QR -->
+            <div class="qr-display" id="qrDisplay">
+                <div class="qr-code-container">
+                    <div id="qrCodeGenerated">
+                        <p style="color: #6b7280; padding: 40px;">
+                            Selecciona una campaña y un dispositivo para generar el QR
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="generateQR()">
+                        🚀 Generar QR
+                    </button>
+                    <button class="btn btn-secondary" id="downloadBtn" onclick="downloadQR()" style="display: none;">
+                        💾 Descargar QR
+                    </button>
+                    <button class="btn btn-outline" id="copyUrlBtn" onclick="copyURL()" style="display: none;">
+                        📋 Copiar URL
+                    </button>
+                    <button class="btn btn-outline" onclick="clearSelection()">
+                        🔄 Limpiar Selección
+                    </button>
                 </div>
             </div>
         </div>
 
-        <!-- Grid de campañas -->
-        {% if campaigns %}
-        <div class="campaigns-grid">
-            {% for campaign in campaigns %}
-            <div class="campaign-card">
-                <div class="campaign-info">
-                    <h3 style="color: #374151; margin-bottom: 10px;">{{ campaign.client }}</h3>
-                    <p style="color: #6b7280; margin-bottom: 15px;">{{ campaign.description }}</p>
-                    
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                        <strong style="color: #4f46e5;">Campaña:</strong>
-                        <span style="color: #374151;">{{ campaign.campaign_code }}</span>
+        <!-- Constructor de QR personalizado -->
+        <div class="qr-builder">
+            <h2 style="color: #374151; margin-bottom: 20px;">🔧 Constructor QR Personalizado</h2>
+            
+            <div class="input-section">
+                <div class="form-group">
+                    <label for="qrUrl">URL Personalizada *</label>
+                    <div class="url-input">
+                        <input type="url" id="qrUrl" placeholder="https://ejemplo.com o https://qr-tracking-system.onrender.com/track?campaign=...">
+                        <button class="btn btn-primary" onclick="loadFromConstructor()">🔗 Cargar desde Constructor</button>
                     </div>
-                    
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-                        <strong style="color: #4f46e5;">Destino:</strong>
-                        <a href="{{ campaign.destination }}" target="_blank" style="color: #4f46e5; text-decoration: none; font-size: 0.9em;">
-                            Ver destino ↗
-                        </a>
-                    </div>
+                    <small style="color: #6b7280; margin-top: 5px; display: block;">
+                        URL completa del destino final o del sistema de tracking
+                    </small>
                 </div>
 
-                <div class="campaign-url">
-                    {{ request.host_url }}track?campaign={{ campaign.campaign_code }}
+                <div class="form-group">
+                    <label for="qrDescription">Descripción del QR (opcional)</label>
+                    <input type="text" id="qrDescription" placeholder="Ej: Campaña de verano 2024 - Totem principal">
                 </div>
+            </div>
 
-                <div class="qr-container">
-                    <div id="qr-{{ campaign.id }}" class="qr-code">
-                        <p style="color: #6b7280;">Haz clic en "Generar QR" para crear el código</p>
+            <!-- Display del QR personalizado -->
+            <div class="qr-display">
+                <div class="qr-code-container">
+                    <div id="qrCodeCustom">
+                        <p style="color: #6b7280; padding: 40px;">
+                            Ingresa una URL personalizada arriba
+                        </p>
                     </div>
                 </div>
-
+                
                 <div class="action-buttons">
-                    <button onclick="generateQR('{{ campaign.campaign_code }}', {{ campaign.id }})" 
-                            class="btn btn-primary btn-small">
-                        📱 Generar QR
+                    <button class="btn btn-primary" onclick="generateCustomQR()">
+                        🚀 Generar QR Personalizado
                     </button>
-                    <button onclick="downloadQR({{ campaign.id }}, '{{ campaign.campaign_code }}')" 
-                            class="btn btn-secondary btn-small" 
-                            id="download-{{ campaign.id }}" 
-                            style="display: none;">
-                        💾 Descargar
+                    <button class="btn btn-secondary" id="downloadCustomBtn" onclick="downloadCustomQR()" style="display: none;">
+                        💾 Descargar QR
                     </button>
-                    <button onclick="copyURL('{{ request.host_url }}track?campaign={{ campaign.campaign_code }}')" 
-                            class="btn btn-outline btn-small">
+                    <button class="btn btn-outline" id="copyCustomUrlBtn" onclick="copyCustomURL()" style="display: none;">
                         📋 Copiar URL
                     </button>
                 </div>
             </div>
-            {% endfor %}
         </div>
-        {% else %}
-        <div style="background: white; border-radius: 15px; padding: 40px; text-align: center; margin-top: 30px;">
-            <h3 style="color: #6b7280;">No hay campañas configuradas</h3>
-            <p style="color: #9ca3af; margin-bottom: 30px;">
-                Contacta al administrador para configurar campañas
-            </p>
-            <a href="/dashboard" class="btn btn-primary">Ver Dashboard</a>
+
+        <!-- Instrucciones -->
+        <div style="background: white; border-radius: 15px; padding: 30px; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);">
+            <h2 style="color: #374151; margin-bottom: 20px;">ℹ️ Instrucciones de Uso</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                <div>
+                    <h4 style="color: #10b981; margin-bottom: 10px;">1. Seleccionar Ambiente</h4>
+                    <p style="color: #6b7280;">Elige Localhost para desarrollo o Producción para despliegue</p>
+                </div>
+                <div>
+                    <h4 style="color: #10b981; margin-bottom: 10px;">2. QR Avanzado</h4>
+                    <p style="color: #6b7280;">Selecciona campaña + dispositivo para tracking completo</p>
+                </div>
+                <div>
+                    <h4 style="color: #10b981; margin-bottom: 10px;">3. QR Personalizado</h4>
+                    <p style="color: #6b7280;">Crea QR desde cualquier URL (destino final o tracking)</p>
+                </div>
+                <div>
+                    <h4 style="color: #10b981; margin-bottom: 10px;">4. Descarga</h4>
+                    <p style="color: #6b7280;">Descarga QR en alta resolución para imprimir</p>
+                </div>
+            </div>
         </div>
-        {% endif %}
 
         <!-- Botones de navegación -->
         <div style="text-align: center; margin-top: 40px;">
-            <a href="/dashboard" class="btn btn-secondary" style="margin-right: 15px;">
+            <a href="/dashboard" class="btn btn-primary" style="margin-right: 15px;">
                 📊 Ver Dashboard
+            </a>
+            <a href="/admin/campaigns" class="btn btn-secondary" style="margin-right: 15px;">
+                🛠️ Admin Campañas
+            </a>
+            <a href="/devices" class="btn btn-secondary" style="margin-right: 15px;">
+                🖥️ Dispositivos
             </a>
             <a href="/" class="btn btn-outline">
                 🏠 Página Principal
@@ -186,94 +470,445 @@
         </div>
     </div>
 
-    <!-- Incluir librería QR -->
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-    
     <script>
-        // Generar código QR
-        async function generateQR(campaignCode, campaignId) {
-            const qrContainer = document.getElementById(`qr-${campaignId}`);
-            const downloadBtn = document.getElementById(`download-${campaignId}`);
+        // Variables globales
+        let currentEnvironment = 'localhost';
+        let BASE_URL = 'http://localhost:8000';
+        const PRODUCTION_URL = 'https://qr-tracking-system.onrender.com';
+        
+        let campaigns = [];
+        let devices = [];
+        let currentQRSize = 200;
+        let currentGeneratedQRDataURL = '';
+        let currentCustomQRDataURL = '';
+        let selectedCampaign = null;
+        let selectedDevice = null;
+
+        // Elementos del DOM
+        const campaignSelect = document.getElementById('campaignSelect');
+        const deviceSelect = document.getElementById('deviceSelect');
+        const combinationInfo = document.getElementById('combinationInfo');
+        const combinationDetails = document.getElementById('combinationDetails');
+        const generatedUrlSection = document.getElementById('generatedUrlSection');
+        const generatedUrlDisplay = document.getElementById('generatedUrlDisplay');
+        const qrUrlInput = document.getElementById('qrUrl');
+        const qrDescriptionInput = document.getElementById('qrDescription');
+
+        // Función para seleccionar ambiente
+        function selectEnvironment(env, element) {
+            currentEnvironment = env;
             
+            // Actualizar BASE_URL
+            if (env === 'localhost') {
+                BASE_URL = 'http://localhost:8000';
+            } else {
+                BASE_URL = PRODUCTION_URL;
+            }
+            
+            // Actualizar botones activos
+            document.querySelectorAll('.env-btn').forEach(btn => btn.classList.remove('active'));
+            element.classList.add('active');
+            
+            // Actualizar display
+            document.getElementById('envDisplay').textContent = 
+                env === 'localhost' ? 'localhost:8000' : 'qr-tracking-system.onrender.com';
+            
+            // Recargar datos si es necesario
+            loadCampaigns();
+            loadDevices();
+            
+            // Si hay combinación seleccionada, actualizar URL
+            if (selectedCampaign && selectedDevice) {
+                updateCombination();
+            }
+            
+            showAlert(`🌐 Ambiente cambiado a: ${env === 'localhost' ? 'Localhost' : 'Producción (Render)'}`, 'info');
+        }
+
+        // Función para generar QR usando API (SIEMPRE EN NEGRO)
+        function generateQRCode(text, size) {
+            return new Promise((resolve, reject) => {
+                // API con color negro siempre
+                const apiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(text)}&color=000000&bgcolor=ffffff&margin=10&format=png`;
+                
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = size;
+                    canvas.height = size;
+                    
+                    ctx.drawImage(img, 0, 0, size, size);
+                    const dataURL = canvas.toDataURL('image/png');
+                    resolve(dataURL);
+                };
+                
+                img.onerror = function() {
+                    reject(new Error('Error cargando QR desde API'));
+                };
+                
+                img.src = apiUrl;
+            });
+        }
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCampaigns();
+            loadDevices();
+            setupEventListeners();
+            checkURLFromConstructor();
+            
+            showAlert('🚀 Generador de QR cargado. Selecciona ambiente, campaña y dispositivo.', 'info');
+        });
+
+        // Utilidades
+        function showAlert(message, type = 'info') {
+            const alertsContainer = document.getElementById('alerts');
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button style="position: absolute; right: 15px; top: 15px; background: none; border: none; font-size: 1.2em; cursor: pointer; color: inherit;" onclick="this.parentElement.remove()">×</button>
+            `;
+            alertsContainer.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                if (alertDiv.parentElement) {
+                    alertDiv.remove();
+                }
+            }, 8000);
+        }
+
+        // Cargar campañas desde la API
+        async function loadCampaigns() {
             try {
-                // Mostrar loading
-                qrContainer.innerHTML = '<p style="color: #4f46e5;">Generando QR...</p>';
+                const response = await fetch(`${BASE_URL}/api/campaigns`);
+                const data = await response.json();
                 
-                const url = `{{ request.host_url }}track?campaign=${campaignCode}`;
+                if (data.success && data.campaigns) {
+                    campaigns = data.campaigns.filter(c => c.active);
+                    populateCampaignSelect();
+                } else {
+                    throw new Error(data.error || 'Error loading campaigns');
+                }
+            } catch (error) {
+                console.error('Error loading campaigns:', error);
+                loadExampleCampaigns();
+                showAlert('⚠️ Usando datos de ejemplo. Verifica la conexión al servidor.', 'info');
+            }
+        }
+
+        // Cargar dispositivos desde la API
+        async function loadDevices() {
+            try {
+                const response = await fetch(`${BASE_URL}/api/devices`);
+                const data = await response.json();
                 
-                // Generar QR Code
-                const qrCodeDataURL = await QRCode.toDataURL(url, {
-                    width: 200,
-                    height: 200,
-                    color: {
-                        dark: '#4f46e5',
-                        light: '#ffffff'
-                    },
-                    errorCorrectionLevel: 'M',
-                    margin: 2
-                });
+                if (data.success && data.devices) {
+                    devices = data.devices.filter(d => d.active);
+                    populateDeviceSelect();
+                } else {
+                    throw new Error(data.error || 'Error loading devices');
+                }
+            } catch (error) {
+                console.error('Error loading devices:', error);
+                loadExampleDevices();
+                showAlert('⚠️ Usando datos de ejemplo. Verifica la conexión al servidor.', 'info');
+            }
+        }
+
+        // Datos de ejemplo para campañas
+        function loadExampleCampaigns() {
+            campaigns = [
+                {
+                    id: 1,
+                    campaign_code: 'promo_verano_2024',
+                    client: 'Nike',
+                    destination: 'https://instagram.com/nike',
+                    description: 'Promoción de verano 2024',
+                    active: true
+                },
+                {
+                    id: 2,
+                    campaign_code: 'black_friday_tech',
+                    client: 'Samsung',
+                    destination: 'https://www.samsung.com/ve/promociones',
+                    description: 'Black Friday Tech 2024',
+                    active: true
+                },
+                {
+                    id: 3,
+                    campaign_code: 'nuevos_productos',
+                    client: 'Coca Cola',
+                    destination: 'https://instagram.com/cocacola',
+                    description: 'Lanzamiento nuevos productos',
+                    active: true
+                }
+            ];
+            populateCampaignSelect();
+        }
+
+        // Datos de ejemplo para dispositivos
+        function loadExampleDevices() {
+            devices = [
+                {
+                    id: 1,
+                    device_id: 'totem_centro_comercial_01',
+                    device_name: 'Totem Principal Entrada',
+                    location: 'Entrada Principal - Planta Baja',
+                    venue: 'Centro Comercial Plaza Venezuela',
+                    device_type: 'Totem Interactivo',
+                    active: true
+                },
+                {
+                    id: 2,
+                    device_id: 'pantalla_food_court',
+                    device_name: 'Pantalla Food Court',
+                    location: 'Área de Comidas',
+                    venue: 'Centro Comercial Plaza Venezuela',
+                    device_type: 'Pantalla LED',
+                    active: true
+                },
+                {
+                    id: 3,
+                    device_id: 'kiosco_metro_plaza_vzla',
+                    device_name: 'Kiosco Metro Plaza Venezuela',
+                    location: 'Estación Metro Plaza Venezuela',
+                    venue: 'Metro de Caracas',
+                    device_type: 'Kiosco Digital',
+                    active: true
+                }
+            ];
+            populateDeviceSelect();
+        }
+
+        // Poblar select de campañas
+        function populateCampaignSelect() {
+            campaignSelect.innerHTML = '<option value="">Seleccionar campaña...</option>';
+            
+            campaigns.forEach(campaign => {
+                const option = document.createElement('option');
+                option.value = campaign.id;
+                option.textContent = `${campaign.client} - ${campaign.campaign_code}`;
+                option.setAttribute('data-campaign', JSON.stringify(campaign));
+                campaignSelect.appendChild(option);
+            });
+        }
+
+        // Poblar select de dispositivos
+        function populateDeviceSelect() {
+            deviceSelect.innerHTML = '<option value="">Seleccionar dispositivo...</option>';
+            
+            devices.forEach(device => {
+                const option = document.createElement('option');
+                option.value = device.id;
+                option.textContent = `${device.device_name || device.device_id} - ${device.venue}`;
+                option.setAttribute('data-device', JSON.stringify(device));
+                deviceSelect.appendChild(option);
+            });
+        }
+
+        // Configurar event listeners
+        function setupEventListeners() {
+            campaignSelect.addEventListener('change', updateCombination);
+            deviceSelect.addEventListener('change', updateCombination);
+        }
+
+        // Actualizar información de la combinación
+        function updateCombination() {
+            const campaignOption = campaignSelect.options[campaignSelect.selectedIndex];
+            const deviceOption = deviceSelect.options[deviceSelect.selectedIndex];
+            
+            if (campaignSelect.value && deviceSelect.value) {
+                selectedCampaign = JSON.parse(campaignOption.getAttribute('data-campaign'));
+                selectedDevice = JSON.parse(deviceOption.getAttribute('data-device'));
                 
-                // Mostrar QR
-                qrContainer.innerHTML = `
-                    <img src="${qrCodeDataURL}" alt="Código QR para ${campaignCode}" 
+                // Mostrar información de la combinación
+                combinationDetails.innerHTML = `
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                        <div>
+                            <strong style="color: #10b981;">📋 Campaña Seleccionada:</strong><br>
+                            <span style="font-family: monospace;">${selectedCampaign.campaign_code}</span><br>
+                            <strong>Cliente:</strong> ${selectedCampaign.client}<br>
+                            <strong>Destino:</strong> <a href="${selectedCampaign.destination}" target="_blank" style="color: #10b981;">${selectedCampaign.destination.substring(0, 50)}...</a>
+                        </div>
+                        <div>
+                            <strong style="color: #10b981;">🖥️ Dispositivo Seleccionado:</strong><br>
+                            <span style="font-family: monospace;">${selectedDevice.device_id}</span><br>
+                            <strong>Ubicación:</strong> ${selectedDevice.location}<br>
+                            <strong>Venue:</strong> ${selectedDevice.venue}
+                        </div>
+                    </div>
+                `;
+                
+                // Generar y mostrar URL
+                const generatedUrl = generateTrackingURL();
+                generatedUrlDisplay.textContent = generatedUrl;
+                
+                combinationInfo.style.display = 'block';
+                generatedUrlSection.style.display = 'block';
+                
+            } else {
+                combinationInfo.style.display = 'none';
+                generatedUrlSection.style.display = 'none';
+                selectedCampaign = null;
+                selectedDevice = null;
+            }
+        }
+
+        // Generar URL de tracking completa (usando el ambiente seleccionado)
+        function generateTrackingURL() {
+            if (!selectedCampaign || !selectedDevice) return '';
+            
+            const params = new URLSearchParams({
+                campaign: selectedCampaign.campaign_code,
+                client: selectedCampaign.client,
+                destination: selectedCampaign.destination,
+                device_id: selectedDevice.device_id,
+                device_name: selectedDevice.device_name || selectedDevice.device_id,
+                location: selectedDevice.location || '',
+                venue: selectedDevice.venue || ''
+            });
+            
+            return `${BASE_URL}/track?${params.toString()}`;
+        }
+
+        // Seleccionar tamaño del QR
+        function selectSize(size, element) {
+            currentQRSize = size;
+            
+            // Actualizar botones activos
+            document.querySelectorAll('.size-btn').forEach(btn => btn.classList.remove('active'));
+            element.classList.add('active');
+        }
+
+        // Generar QR principal (campaña + dispositivo)
+        async function generateQR() {
+            if (!selectedCampaign || !selectedDevice) {
+                showAlert('⚠️ Selecciona una campaña y un dispositivo primero', 'error');
+                return;
+            }
+
+            try {
+                const url = generateTrackingURL();
+                
+                document.getElementById('qrCodeGenerated').innerHTML = '<p style="color: #10b981; padding: 20px;">Generando QR...</p>';
+                
+                currentGeneratedQRDataURL = await generateQRCode(url, currentQRSize);
+                
+                document.getElementById('qrCodeGenerated').innerHTML = `
+                    <img src="${currentGeneratedQRDataURL}" alt="Código QR" 
                          style="max-width: 100%; height: auto; border-radius: 8px;">
                 `;
                 
-                // Mostrar botón de descarga
-                downloadBtn.style.display = 'inline-block';
-                downloadBtn.setAttribute('data-qr-url', qrCodeDataURL);
+                document.getElementById('downloadBtn').style.display = 'inline-block';
+                document.getElementById('copyUrlBtn').style.display = 'inline-block';
                 
-                console.log(`QR generado para campaña: ${campaignCode}`);
+                const envText = currentEnvironment === 'localhost' ? 'Localhost' : 'Producción';
+                showAlert(`✅ QR generado exitosamente para ${envText}`, 'success');
+                
+                // Registrar generación en analytics
+                await logQRGeneration(selectedCampaign.id, selectedDevice.id);
                 
             } catch (error) {
                 console.error('Error generando QR:', error);
-                qrContainer.innerHTML = '<p style="color: #dc2626;">Error generando QR</p>';
+                document.getElementById('qrCodeGenerated').innerHTML = '<p style="color: #dc2626;">Error generando QR</p>';
+                showAlert('❌ Error al generar el código QR', 'error');
             }
         }
-        
-        // Descargar QR
-        function downloadQR(campaignId, campaignCode) {
-            const downloadBtn = document.getElementById(`download-${campaignId}`);
-            const qrDataURL = downloadBtn.getAttribute('data-qr-url');
+
+        // Generar QR personalizado
+        async function generateCustomQR() {
+            const url = qrUrlInput.value.trim();
             
-            if (!qrDataURL) {
-                alert('Primero genera el código QR');
+            if (!url) {
+                showAlert('❌ Ingresa una URL para generar el QR', 'error');
+                qrUrlInput.focus();
                 return;
             }
-            
-            // Crear elemento de descarga
+
+            if (!isValidURL(url)) {
+                showAlert('❌ Ingresa una URL válida (debe comenzar con http:// o https://)', 'error');
+                qrUrlInput.focus();
+                return;
+            }
+
+            try {
+                document.getElementById('qrCodeCustom').innerHTML = '<p style="color: #10b981; padding: 20px;">Generando QR personalizado...</p>';
+                
+                currentCustomQRDataURL = await generateQRCode(url, currentQRSize);
+                
+                document.getElementById('qrCodeCustom').innerHTML = `
+                    <img src="${currentCustomQRDataURL}" alt="Código QR Personalizado" 
+                         style="max-width: 100%; height: auto; border-radius: 8px;">
+                    <p style="margin-top: 10px; color: #6b7280; font-size: 0.9em;">${qrDescriptionInput.value || 'QR Personalizado'}</p>
+                `;
+                
+                document.getElementById('downloadCustomBtn').style.display = 'inline-block';
+                document.getElementById('copyCustomUrlBtn').style.display = 'inline-block';
+                
+                showAlert('✅ Código QR personalizado generado exitosamente', 'success');
+                
+            } catch (error) {
+                console.error('Error generando QR personalizado:', error);
+                document.getElementById('qrCodeCustom').innerHTML = '<p style="color: #dc2626;">Error generando QR personalizado</p>';
+                showAlert('❌ Error al generar el código QR personalizado', 'error');
+            }
+        }
+
+        // Descargar QR principal
+        function downloadQR() {
+            if (!currentGeneratedQRDataURL) {
+                showAlert('❌ No hay QR generado para descargar', 'error');
+                return;
+            }
+
+            const envSuffix = currentEnvironment === 'localhost' ? 'localhost' : 'prod';
             const link = document.createElement('a');
-            link.download = `QR_${campaignCode}_${new Date().toISOString().split('T')[0]}.png`;
-            link.href = qrDataURL;
-            
-            // Simular clic para descargar
+            link.download = `qr-${selectedCampaign?.campaign_code || 'campaign'}-${selectedDevice?.device_id || 'device'}-${envSuffix}-${currentQRSize}px.png`;
+            link.href = currentGeneratedQRDataURL;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
             
-            console.log(`QR descargado: ${campaignCode}`);
+            showAlert('💾 QR descargado exitosamente', 'success');
         }
-        
-        // Copiar URL al portapapeles
-        async function copyURL(url) {
+
+        // Descargar QR personalizado
+        function downloadCustomQR() {
+            if (!currentCustomQRDataURL) {
+                showAlert('❌ No hay QR personalizado generado para descargar', 'error');
+                return;
+            }
+
+            const description = qrDescriptionInput.value || 'personalizado';
+            const fileName = `qr-${description.replace(/[^a-z0-9]/gi, '_').toLowerCase()}-${currentQRSize}px.png`;
+            
+            const link = document.createElement('a');
+            link.download = fileName;
+            link.href = currentCustomQRDataURL;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showAlert('💾 QR personalizado descargado exitosamente', 'success');
+        }
+
+        // Copiar URL principal
+        async function copyURL() {
+            if (!selectedCampaign || !selectedDevice) {
+                showAlert('❌ No hay URL generada para copiar', 'error');
+                return;
+            }
+
+            const url = generateTrackingURL();
+            
             try {
                 await navigator.clipboard.writeText(url);
-                
-                // Mostrar confirmación temporal
-                const originalText = event.target.textContent;
-                event.target.textContent = '✅ Copiado';
-                event.target.style.background = '#10b981';
-                
-                setTimeout(() => {
-                    event.target.textContent = originalText;
-                    event.target.style.background = '';
-                }, 2000);
-                
-                console.log('URL copiada:', url);
-                
+                showAlert('📋 URL copiada al portapapeles', 'success');
             } catch (error) {
-                console.error('Error copiando URL:', error);
-                
                 // Fallback para navegadores que no soportan clipboard API
                 const textArea = document.createElement('textarea');
                 textArea.value = url;
@@ -281,25 +916,120 @@
                 textArea.select();
                 document.execCommand('copy');
                 document.body.removeChild(textArea);
-                
-                alert('URL copiada al portapapeles');
+                showAlert('📋 URL copiada al portapapeles', 'success');
             }
         }
-        
-        // Generar todos los QRs automáticamente (opcional)
-        function generateAllQRs() {
-            const campaigns = {{ campaigns | tojson }};
-            campaigns.forEach((campaign, index) => {
-                setTimeout(() => {
-                    generateQR(campaign.campaign_code, campaign.id);
-                }, index * 500); // Delay entre generaciones
-            });
+
+        // Copiar URL personalizada
+        async function copyCustomURL() {
+            const url = qrUrlInput.value.trim();
+            
+            if (!url) {
+                showAlert('❌ No hay URL personalizada para copiar', 'error');
+                return;
+            }
+
+            try {
+                await navigator.clipboard.writeText(url);
+                showAlert('📋 URL personalizada copiada al portapapeles', 'success');
+            } catch (error) {
+                // Fallback para navegadores que no soportan clipboard API
+                const textArea = document.createElement('textarea');
+                textArea.value = url;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showAlert('📋 URL personalizada copiada al portapapeles', 'success');
+            }
         }
-        
-        // Mostrar información adicional
-        console.log('Generador de QR cargado');
-        console.log('Host URL:', '{{ request.host_url }}');
-        console.log('Campañas disponibles:', {{ campaigns | length }});
+
+        // Limpiar selección
+        function clearSelection() {
+            campaignSelect.value = '';
+            deviceSelect.value = '';
+            selectedCampaign = null;
+            selectedDevice = null;
+            
+            combinationInfo.style.display = 'none';
+            generatedUrlSection.style.display = 'none';
+            
+            document.getElementById('qrCodeGenerated').innerHTML = `
+                <p style="color: #6b7280; padding: 40px;">
+                    Selecciona una campaña y un dispositivo para generar el QR
+                </p>
+            `;
+            
+            document.getElementById('downloadBtn').style.display = 'none';
+            document.getElementById('copyUrlBtn').style.display = 'none';
+            
+            currentGeneratedQRDataURL = '';
+            
+            showAlert('🔄 Selección limpiada', 'info');
+        }
+
+        // Cargar desde constructor de URLs
+        function loadFromConstructor() {
+            showAlert('💡 Pega aquí la URL completa del sistema de tracking o destino final', 'info');
+            qrUrlInput.focus();
+        }
+
+        // Validar URL
+        function isValidURL(string) {
+            try {
+                new URL(string);
+                return true;
+            } catch (_) {
+                return false;
+            }
+        }
+
+        // Verificar si hay URL del constructor en parámetros
+        function checkURLFromConstructor() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const constructorUrl = urlParams.get('url');
+            
+            if (constructorUrl && isValidURL(constructorUrl)) {
+                qrUrlInput.value = constructorUrl;
+                showAlert('🔗 URL cargada desde parámetros del constructor', 'success');
+            }
+        }
+
+        // Registrar generación de QR en analytics
+        async function logQRGeneration(campaignId, deviceId) {
+            try {
+                const response = await fetch(`${BASE_URL}/api/analytics/qr-generated`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        campaign_id: campaignId,
+                        physical_device_id: deviceId,
+                        qr_size: currentQRSize,
+                        generated_by: `web_generator_${currentEnvironment}`
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    console.log('📊 Generación de QR registrada en analytics');
+                }
+            } catch (error) {
+                console.warn('⚠️ No se pudo registrar la generación en analytics:', error);
+            }
+        }
+
+        console.log('🚀 Generador de QR v3.0.0 cargado correctamente');
+        console.log('🌐 Ambientes disponibles: Localhost y Producción (Render)');
+        console.log('📊 Funciones disponibles:', {
+            selectEnvironment: 'Cambiar ambiente',
+            generateQR: 'Generar QR avanzado',
+            generateCustomQR: 'Generar QR personalizado',
+            downloadQR: 'Descargar QR',
+            copyURL: 'Copiar URL',
+            clearSelection: 'Limpiar selección'
+        });
     </script>
 </body>
 </html>
