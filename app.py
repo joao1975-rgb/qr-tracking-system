@@ -18,7 +18,7 @@ from fastapi import FastAPI, Request, HTTPException, Depends
 from fastapi.responses import HTMLResponse, FileResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
 import sqlite3
 import json
@@ -64,9 +64,9 @@ DATABASE_PATH = "qr_tracking.db"
 # ================================
 
 class CampaignCreate(BaseModel):
-    campaign_code: str = Field(..., min_length=1, max_length=100)
-    client: str = Field(..., min_length=1, max_length=200)
-    destination: str = Field(..., min_length=1)
+    campaign_code: str
+    client: str
+    destination: str
     description: Optional[str] = None
     active: bool = True
 
